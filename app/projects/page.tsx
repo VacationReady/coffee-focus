@@ -1,54 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
+import { formatSecondsToMinutesLabel } from "../lib/sessionUtils";
 import {
-  Session,
-  STORAGE_KEY,
-  safeParseSessions,
-  formatSecondsToMinutesLabel,
-} from "../lib/sessionUtils";
+  PROJECTS_STORAGE_KEY,
+  ProjectRecord,
+  safeParseProjects,
+  seedProjects,
+} from "../lib/projectUtils";
 
-type Project = {
-  id: string;
-  name: string;
-  chips: string[];
-  notes: string;
-};
-
-const SAMPLE_PROJECTS: Project[] = [
-  {
-    id: "retro-cab",
-    name: "Retro Cabinet",
-    chips: ["PIXEL", "UI"],
-    notes: "Skin the cabinet UI for the focus pot.",
-  },
-  {
-    id: "beans-lab",
-    name: "Beans Lab",
-    chips: ["RESEARCH", "CAFFEINE"],
-    notes: "Experiment with new bean blends for focus.",
-  },
-  {
-    id: "brew-sync",
-    name: "Brew Sync",
-    chips: ["SYNC", "MOBILE"],
-    notes: "Plan the mobile companion app.",
-  },
-];
+function formatNoteDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function ProjectsPage() {
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [projects, setProjects] = useState<ProjectRecord[]>([]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    setSessions(safeParseSessions(raw));
+    const raw = window.localStorage.getItem(PROJECTS_STORAGE_KEY);
+    let parsed = safeParseProjects(raw);
+    if (parsed.length === 0) {
+      parsed = seedProjects();
+      window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(parsed));
+    }
+    setProjects(parsed);
   }, []);
 
-  const totalMinutes = formatSecondsToMinutesLabel(
-    sessions.reduce((acc, s) => acc + s.seconds, 0)
+  const totalSeconds = useMemo(
+    () =>
+      projects.reduce(
+        (acc, project) =>
+          acc + project.tasks.reduce((taskSum, task) => taskSum + task.loggedSeconds, 0),
+        0
+      ),
+    [projects]
   );
 
   return (
@@ -73,37 +67,105 @@ export default function ProjectsPage() {
         </div>
         <div className="projects-meter">
           <span>Total logged</span>
-          <strong>{totalMinutes}</strong>
+          <strong>{formatSecondsToMinutesLabel(totalSeconds)}</strong>
         </div>
       </section>
 
       <div className="projects-grid">
-        {SAMPLE_PROJECTS.map((project) => (
-          <article key={project.id} className="project-card">
-            <div className="project-card-header">
-              <h3>{project.name}</h3>
-              <button type="button" className="btn btn-ghost project-btn">
-                ➕ Task
-              </button>
-            </div>
-            <div className="project-chips">
-              {project.chips.map((chip) => (
-                <span key={chip} className="project-chip">
-                  {chip}
-                </span>
-              ))}
-            </div>
-            <p className="project-notes">{project.notes}</p>
-            <div className="project-footer">
-              <span>Milestones</span>
-              <div className="project-squares">
-                {[0, 1, 2, 3].map((idx) => (
-                  <div key={idx} className="project-square" />
+        {projects.map((project) => {
+          const projectSeconds = project.tasks.reduce(
+            (acc, task) => acc + task.loggedSeconds,
+            0
+          );
+          const progressRatio = project.focusGoalMinutes
+            ? Math.min(projectSeconds / (project.focusGoalMinutes * 60), 1)
+            : null;
+
+          return (
+            <article key={project.id} className="project-card">
+              <div className="project-card-header">
+                <h3>{project.name}</h3>
+                <Link href="/" className="btn btn-ghost project-btn">
+                  + Log time
+                </Link>
+              </div>
+              <div className="project-chips">
+                {project.chips.map((chip) => (
+                  <span key={chip} className="project-chip">
+                    {chip}
+                  </span>
                 ))}
               </div>
-            </div>
-          </article>
-        ))}
+              <p className="project-summary">{project.summary}</p>
+              <div className="project-metrics">
+                <div>
+                  <span>Logged</span>
+                  <strong>{formatSecondsToMinutesLabel(projectSeconds)}</strong>
+                </div>
+                {project.focusGoalMinutes ? (
+                  <div>
+                    <span>Goal</span>
+                    <strong>{project.focusGoalMinutes} min</strong>
+                  </div>
+                ) : null}
+              </div>
+              {progressRatio !== null && (
+                <div className="project-progress">
+                  <div className="project-progress-bar">
+                    <div
+                      className="project-progress-fill"
+                      style={{ transform: `scaleX(${progressRatio})` }}
+                    />
+                  </div>
+                  <span>{Math.round(progressRatio * 100)}% of focus goal</span>
+                </div>
+              )}
+              <div className="project-task-list">
+                {project.tasks.map((task) => (
+                  <div key={task.id} className="project-task">
+                    <div className="project-task-main">
+                      <p className="project-task-title">{task.title}</p>
+                      <span className={`project-task-status project-task-status-${task.status}`}>
+                        {task.status}
+                      </span>
+                    </div>
+                    <div className="project-task-meta">
+                      {task.estimateMinutes && (
+                        <span>{task.estimateMinutes} min est.</span>
+                      )}
+                      <span>{formatSecondsToMinutesLabel(task.loggedSeconds)} logged</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="project-notes-feed">
+                <div className="project-notes-header">
+                  <span>Project notes</span>
+                  <Link href="/" className="note-project-jump">
+                    Log another ↗
+                  </Link>
+                </div>
+                {project.notes.length === 0 ? (
+                  <p className="project-notes-empty">No notes yet. Finish a focus block to add one.</p>
+                ) : (
+                  project.notes
+                    .slice()
+                    .reverse()
+                    .slice(0, 3)
+                    .map((note) => (
+                      <article key={note.id} className="project-note-card">
+                        <p className="project-note-body">{note.body}</p>
+                        <div className="project-note-meta">
+                          <span>{note.author}</span>
+                          <time>{formatNoteDate(note.createdAt)}</time>
+                        </div>
+                      </article>
+                    ))
+                )}
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ export type StickyNote = {
   completed: boolean;
   createdAt: string;
   completedAt?: string;
+  projectId?: string;
 };
 
 export const NOTES_STORAGE_KEY = "peopleCoreNotes_v1";
@@ -35,6 +36,7 @@ export function safeParseNotes(raw: string | null): StickyNote[] {
         completed: (n as StickyNote).completed,
         createdAt: (n as StickyNote).createdAt,
         completedAt: (n as StickyNote).completedAt,
+        projectId: (n as StickyNote).projectId,
       }));
   } catch {
     return [];

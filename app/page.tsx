@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   Session,
@@ -20,9 +20,19 @@ import {
   FOCUS_INTENT_KEY,
   PROJECTS_STORAGE_KEY,
   addSecondsToProjectTask,
+  generateProjectNoteId,
   safeParseFocusIntent,
   safeParseProjects,
+  seedProjects,
 } from "./lib/projectUtils";
+import type { ProjectRecord } from "./lib/projectUtils";
+
+type ProjectSelection = {
+  projectId: string;
+  taskId: string;
+  projectName: string;
+  taskTitle: string;
+};
 
 export default function HomePage() {
   const [minutesInput, setMinutesInput] = useState<number>(50);
@@ -36,6 +46,58 @@ export default function HomePage() {
   const [draggedNote, setDraggedNote] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [focusIntent, setFocusIntent] = useState<FocusIntent | null>(null);
+  const [projects, setProjects] = useState<ProjectRecord[]>([]);
+  const [showProjectPrompt, setShowProjectPrompt] = useState(false);
+  const [selectedProjectTask, setSelectedProjectTask] = useState<ProjectSelection | null>(null);
+  const [completionNote, setCompletionNote] = useState("");
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [noteProjectPickerId, setNoteProjectPickerId] = useState<string | null>(null);
+  const [pendingCompletionIntent, setPendingCompletionIntent] = useState<FocusIntent | null>(null);
+  const [noteProjectDraft, setNoteProjectDraft] = useState<string | null>(null);
+
+  const applyProjectsToStorage = useCallback((next: ProjectRecord[]) => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const projectTaskOptions = useMemo(() => {
+    return projects.flatMap((project) =>
+      project.tasks.map((task) => ({
+        projectId: project.id,
+        taskId: task.id,
+        projectName: project.name,
+        taskTitle: task.title,
+      }))
+    );
+  }, [projects]);
+
+  const projectOptions = useMemo(
+    () => projects.map((project) => ({ id: project.id, name: project.name })),
+    [projects]
+  );
+
+  const projectNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    projects.forEach((project) => {
+      map.set(project.id, project.name);
+    });
+    return map;
+  }, [projects]);
+
+  useEffect(() => {
+    if (!noteProjectPickerId) {
+      setNoteProjectDraft(null);
+    }
+  }, [noteProjectPickerId]);
+
+  useEffect(() => {
+    if (!showProjectPrompt || selectedProjectTask || projectTaskOptions.length === 0) return;
+    setSelectedProjectTask(projectTaskOptions[0]);
+  }, [projectTaskOptions, selectedProjectTask, showProjectPrompt]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -49,6 +111,13 @@ export default function HomePage() {
       setFocusIntent(parsedIntent);
       updateFromMinutes(parsedIntent.minutes);
     }
+    const projectsRaw = window.localStorage.getItem(PROJECTS_STORAGE_KEY);
+    let parsedProjects = safeParseProjects(projectsRaw);
+    if (parsedProjects.length === 0) {
+      parsedProjects = seedProjects();
+      window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(parsedProjects));
+    }
+    setProjects(parsedProjects);
   }, []);
 
   useEffect(() => {
@@ -87,28 +156,22 @@ export default function HomePage() {
   }, []);
 
   const syncProjectsWithLog = useCallback(
-    (seconds: number) => {
-      if (!focusIntent || typeof window === "undefined") return;
+    (intent: FocusIntent | null, seconds: number) => {
+      if (!intent || typeof window === "undefined") return;
       const rawProjects = window.localStorage.getItem(PROJECTS_STORAGE_KEY);
-      const parsedProjects = safeParseProjects(rawProjects);
+      const parsedProjects = rawProjects ? safeParseProjects(rawProjects) : projects;
       if (parsedProjects.length === 0) return;
       const nextProjects = addSecondsToProjectTask(
         parsedProjects,
-        focusIntent.projectId,
-        focusIntent.taskId,
+        intent.projectId,
+        intent.taskId,
         seconds
       );
       if (nextProjects === parsedProjects) return;
-      try {
-        window.localStorage.setItem(
-          PROJECTS_STORAGE_KEY,
-          JSON.stringify(nextProjects)
-        );
-      } catch {
-        // ignore
-      }
+      setProjects(nextProjects);
+      applyProjectsToStorage(nextProjects);
     },
-    [focusIntent]
+    [applyProjectsToStorage, projects]
   );
 
   const updateFromMinutes = useCallback(
@@ -131,7 +194,7 @@ export default function HomePage() {
   }, [durationSeconds]);
 
   const addSession = useCallback(
-    (seconds: number) => {
+    (seconds: number, attribution?: FocusIntent | null) => {
       const clamped = Math.max(1, Math.round(seconds));
       const now = new Date();
       setSessions((prev) => [
@@ -141,10 +204,13 @@ export default function HomePage() {
           date: now.toISOString(),
         },
       ]);
-      if (focusIntent) {
-        syncProjectsWithLog(clamped);
-        showToast(`Logged to ${focusIntent.projectName} • ${focusIntent.taskTitle}`);
-        clearFocusIntent();
+      const intentForLog = attribution ?? focusIntent;
+      if (intentForLog) {
+        syncProjectsWithLog(intentForLog, clamped);
+        showToast(`Logged to ${intentForLog.projectName} • ${intentForLog.taskTitle}`);
+        if (focusIntent) {
+          clearFocusIntent();
+        }
       } else {
         showToast("Logged to your cup history.");
       }
@@ -152,12 +218,56 @@ export default function HomePage() {
     [clearFocusIntent, focusIntent, showToast, syncProjectsWithLog]
   );
 
+  const dismissCompletionModal = useCallback(() => {
+    setCompletionNote("");
+    setShowCompletionModal(false);
+    setPendingCompletionIntent(null);
+  }, []);
+
+  const finalizeCompletion = useCallback(
+    (noteBody: string) => {
+      const intent = pendingCompletionIntent;
+      if (!intent || typeof window === "undefined") {
+        dismissCompletionModal();
+        return;
+      }
+      const rawProjects = window.localStorage.getItem(PROJECTS_STORAGE_KEY);
+      const parsedProjects = rawProjects ? safeParseProjects(rawProjects) : projects;
+      const timestamp = new Date().toISOString();
+      const nextProjects = parsedProjects.map((project) => {
+        if (project.id !== intent.projectId) return project;
+        const noteId = generateProjectNoteId();
+        const note = {
+          id: noteId,
+          body: noteBody || "Logged focus block",
+          author: "You",
+          createdAt: timestamp,
+        };
+        return {
+          ...project,
+          notes: [...project.notes, note],
+          updatedAt: timestamp,
+        };
+      });
+      setProjects(nextProjects);
+      applyProjectsToStorage(nextProjects);
+      dismissCompletionModal();
+    },
+    [applyProjectsToStorage, dismissCompletionModal, pendingCompletionIntent, projects]
+  );
+
   const completeTimer = useCallback(() => {
     setIsRunning(false);
     setRemainingSeconds(0);
     setHasEverStarted(true);
-    addSession(durationSeconds);
-  }, [addSession, durationSeconds]);
+    const intentSnapshot = focusIntent;
+    addSession(durationSeconds, intentSnapshot);
+    if (intentSnapshot) {
+      setPendingCompletionIntent(intentSnapshot);
+      setCompletionNote("");
+      setShowCompletionModal(true);
+    }
+  }, [addSession, durationSeconds, focusIntent]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -183,6 +293,10 @@ export default function HomePage() {
     if (!hasEverStarted) {
       setRemainingSeconds(durationSeconds);
     }
+    if (!focusIntent) {
+      openProjectPrompt();
+      return;
+    }
     setIsRunning(true);
     setHasEverStarted(true);
   };
@@ -194,14 +308,20 @@ export default function HomePage() {
   const handleLogNow = () => {
     const worked = durationSeconds - remainingSeconds;
     if (worked > 0.5) {
-      addSession(worked);
+      const intentSnapshot = focusIntent;
+      addSession(worked, intentSnapshot);
+      if (intentSnapshot) {
+        setPendingCompletionIntent(intentSnapshot);
+        setCompletionNote("");
+        setShowCompletionModal(true);
+      }
     } else {
       showToast("Too short to log.");
     }
     resetTimer();
   };
 
-  const addNote = () => {
+  const addNote = (overrides?: Partial<StickyNote>) => {
     const newNote: StickyNote = {
       id: generateNoteId(),
       text: "",
@@ -209,6 +329,7 @@ export default function HomePage() {
       y: 100,
       completed: false,
       createdAt: new Date().toISOString(),
+      projectId: overrides?.projectId,
     };
     setNotes((prev) => [...prev, newNote]);
   };
@@ -217,6 +338,66 @@ export default function HomePage() {
     setNotes((prev) =>
       prev.map((note) => (note.id === id ? { ...note, text } : note))
     );
+  };
+
+  const selectProjectTask = (selection: ProjectSelection | null) => {
+    setSelectedProjectTask(selection);
+    setNoteProjectPickerId(null);
+  };
+
+  const handleProjectTaskChange = (taskId: string) => {
+    const nextSelection = projectTaskOptions.find((option) => option.taskId === taskId) || null;
+    selectProjectTask(nextSelection);
+  };
+
+  const openProjectPrompt = () => {
+    if (projects.length === 0) {
+      const seeded = seedProjects();
+      setProjects(seeded);
+      applyProjectsToStorage(seeded);
+    }
+    setShowProjectPrompt(true);
+  };
+
+  const confirmProjectPrompt = (attach: boolean) => {
+    if (attach && selectedProjectTask) {
+      const intent: FocusIntent = {
+        projectId: selectedProjectTask.projectId,
+        taskId: selectedProjectTask.taskId,
+        projectName: selectedProjectTask.projectName,
+        taskTitle: selectedProjectTask.taskTitle,
+        minutes: minutesInput,
+        createdAt: new Date().toISOString(),
+      };
+      setFocusIntent(intent);
+      if (typeof window !== "undefined") {
+        try {
+          window.localStorage.setItem(FOCUS_INTENT_KEY, JSON.stringify(intent));
+        } catch {
+          // ignore
+        }
+      }
+    }
+    setShowProjectPrompt(false);
+    setSelectedProjectTask(null);
+    setIsRunning(true);
+    setHasEverStarted(true);
+  };
+
+  const attachNoteToProject = (id: string, projectId: string | null) => {
+    setNotes((prev) =>
+      prev.map((note) => (note.id === id ? { ...note, projectId: projectId || undefined } : note))
+    );
+  };
+
+  const openNoteProjectPicker = (note: StickyNote) => {
+    setNoteProjectPickerId(note.id);
+    setNoteProjectDraft(note.projectId ?? projectOptions[0]?.id ?? null);
+  };
+
+  const applyNoteProjectSelection = (noteId: string) => {
+    attachNoteToProject(noteId, noteProjectDraft ?? null);
+    setNoteProjectPickerId(null);
   };
 
   const completeNote = (id: string) => {
@@ -311,7 +492,7 @@ export default function HomePage() {
         </div>
       )}
       <div className="floating-note-launcher">
-        <button onClick={addNote} className="btn-add-note" title="Add Note">
+        <button onClick={() => addNote()} className="btn-add-note" title="Add Note">
           + Note
         </button>
       </div>
@@ -463,6 +644,68 @@ export default function HomePage() {
               placeholder="Type your note..."
               maxLength={200}
             />
+            <div className="sticky-note-project">
+              {note.projectId ? (
+                <div className="note-project-chip">
+                  <span>
+                    Linked to {projectNameById.get(note.projectId) || "project"} ·
+                    <Link href="/projects" className="note-project-jump">
+                      /projects
+                    </Link>
+                  </span>
+                  <button
+                    type="button"
+                    className="note-project-manage"
+                    onClick={() => openNoteProjectPicker(note)}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="note-project-add"
+                  onClick={() => openNoteProjectPicker(note)}
+                  disabled={projectOptions.length === 0}
+                >
+                  Add to project
+                </button>
+              )}
+
+              {noteProjectPickerId === note.id && (
+                <div className="note-project-picker">
+                  <label htmlFor={`project-select-${note.id}`}>Choose project</label>
+                  <select
+                    id={`project-select-${note.id}`}
+                    value={noteProjectDraft ?? ""}
+                    onChange={(e) => setNoteProjectDraft(e.target.value || null)}
+                  >
+                    <option value="">No project</option>
+                    {projectOptions.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="note-project-picker-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => applyNoteProjectSelection(note.id)}
+                    >
+                      Apply
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => setNoteProjectPickerId(null)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <button
               className="sticky-note-complete"
               onClick={() => completeNote(note.id)}
@@ -477,6 +720,88 @@ export default function HomePage() {
         <div className="toast-label">Session</div>
         <div>{toastMessage || "Logged to your cup history."}</div>
       </div>
+
+      {showProjectPrompt && (
+        <div className="modal-scrim" role="dialog" aria-modal="true">
+          <div className="modal-card">
+            <p className="modal-kicker">Before you start…</p>
+            <h3>Attribute this block to a project?</h3>
+            <p className="modal-copy">
+              Time linked here is fully referenced inside <strong>/projects</strong> so everyone sees
+              progress against the right task.
+            </p>
+            {projectTaskOptions.length > 0 ? (
+              <div className="modal-field">
+                <label htmlFor="projectTaskSelect">Select task</label>
+                <select
+                  id="projectTaskSelect"
+                  value={selectedProjectTask?.taskId ?? ""}
+                  onChange={(e) => handleProjectTaskChange(e.target.value)}
+                >
+                  {projectTaskOptions.map((option) => (
+                    <option key={option.taskId} value={option.taskId}>
+                      {option.projectName} • {option.taskTitle}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <p className="modal-empty">
+                No active project tasks yet. Seed a project in the /projects view to begin attribution.
+              </p>
+            )}
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => confirmProjectPrompt(true)}
+                disabled={!selectedProjectTask}
+              >
+                Yes, track this block
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => confirmProjectPrompt(false)}
+              >
+                No thanks
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCompletionModal && pendingCompletionIntent && (
+        <div className="modal-scrim" role="dialog" aria-modal="true">
+          <div className="modal-card">
+            <p className="modal-kicker">Log a project note</p>
+            <h3>{pendingCompletionIntent.projectName}</h3>
+            <p className="modal-copy">
+              Quick recap for <strong>{pendingCompletionIntent.taskTitle}</strong>—what moved forward and
+              what remains outstanding? This note is pinned to the project timeline inside /projects.
+            </p>
+            <textarea
+              className="modal-textarea"
+              value={completionNote}
+              onChange={(e) => setCompletionNote(e.target.value)}
+              placeholder="Achieved: …\nOutstanding: …"
+              maxLength={400}
+            />
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => finalizeCompletion(completionNote.trim())}
+              >
+                Save to /projects
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={dismissCompletionModal}>
+                Skip for now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

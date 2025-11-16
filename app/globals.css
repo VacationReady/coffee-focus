@@ -1444,6 +1444,70 @@ input[type="number"]:focus {
   transform: scale(1.05);
 }
 
+.sticky-note-project {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: "Geist", sans-serif;
+  font-size: 0.8rem;
+  color: #3d2a1a;
+}
+
+.note-project-add,
+.note-project-manage {
+  border: 1px dashed rgba(120, 80, 20, 0.4);
+  background: rgba(254, 243, 199, 0.6);
+  color: #3d2a1a;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.note-project-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.note-project-chip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  font-size: 0.78rem;
+}
+
+.note-project-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(120, 80, 20, 0.3);
+}
+
+.note-project-picker select {
+  border-radius: 6px;
+  border: 1px solid rgba(120, 80, 20, 0.4);
+  padding: 4px 6px;
+  font-size: 0.85rem;
+}
+
+.note-project-picker-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.note-project-manage {
+  border-style: solid;
+  background: rgba(254, 243, 199, 0.85);
+}
+
 /* === Notes Page === */
 
 .notes-shell {
@@ -1586,6 +1650,87 @@ input[type="number"]:focus {
 .note-card-delete:hover {
   background: rgba(200, 116, 43, 0.2);
   color: #78501a;
+}
+
+/* === Modals === */
+
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 5, 2, 0.82);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+  padding: 24px;
+}
+
+.modal-card {
+  width: min(520px, 100%);
+  background: linear-gradient(145deg, #2b1206, #0f0602);
+  border: 1px solid rgba(243, 199, 132, 0.4);
+  border-radius: 30px;
+  padding: 28px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(248, 236, 213, 0.6);
+}
+
+.modal-card h3 {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: 0.08em;
+}
+
+.modal-copy {
+  margin: 0;
+  color: rgba(248, 236, 213, 0.75);
+  line-height: 1.5;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-field select,
+.modal-textarea {
+  border-radius: 12px;
+  border: 1px solid rgba(243, 199, 132, 0.3);
+  background: rgba(17, 9, 5, 0.7);
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.modal-textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modal-empty {
+  margin: 0;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px dashed rgba(243, 199, 132, 0.4);
+  color: rgba(248, 236, 213, 0.65);
 }
 
 .note-card-text {
