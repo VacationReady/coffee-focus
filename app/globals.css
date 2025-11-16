@@ -13,12 +13,6 @@
   --shadow-soft: 0 24px 70px rgba(7, 4, 2, 0.8);
   --shadow-inner: inset 0 0 28px rgba(0, 0, 0, 0.55);
 }
-.floating-note-launcher {
-  position: fixed;
-  top: 26px;
-  left: 26px;
-  z-index: 1200;
-}
 
 * {
   box-sizing: border-box;
@@ -1300,6 +1294,18 @@ input[type="number"]:focus {
 }
 
 /* === Sticky Notes === */
+
+.floating-note-launcher {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 1200;
+  pointer-events: none;
+}
+
+.floating-note-launcher .btn-add-note {
+  pointer-events: auto;
+}
 
 .btn-add-note {
   padding: 5px 12px;
