@@ -9,6 +9,12 @@ import {
   formatSecondsToMMSS,
   safeParseSessions,
 } from "./lib/sessionUtils";
+import {
+  StickyNote,
+  NOTES_STORAGE_KEY,
+  safeParseNotes,
+  generateNoteId,
+} from "./lib/noteUtils";
 
 export default function HomePage() {
   const [minutesInput, setMinutesInput] = useState<number>(50);
@@ -18,11 +24,16 @@ export default function HomePage() {
   const [hasEverStarted, setHasEverStarted] = useState<boolean>(false);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [notes, setNotes] = useState<StickyNote[]>([]);
+  const [draggedNote, setDraggedNote] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const raw = window.localStorage.getItem(STORAGE_KEY);
     setSessions(safeParseSessions(raw));
+    const notesRaw = window.localStorage.getItem(NOTES_STORAGE_KEY);
+    setNotes(safeParseNotes(notesRaw));
   }, []);
 
   useEffect(() => {
@@ -33,6 +44,15 @@ export default function HomePage() {
       // ignore
     }
   }, [sessions]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
+    } catch {
+      // ignore
+    }
+  }, [notes]);
 
   const showToast = useCallback((message: string) => {
     setToastMessage(message);
@@ -125,6 +145,78 @@ export default function HomePage() {
     resetTimer();
   };
 
+  const addNote = () => {
+    const newNote: StickyNote = {
+      id: generateNoteId(),
+      text: "",
+      x: 100,
+      y: 100,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+    setNotes((prev) => [...prev, newNote]);
+  };
+
+  const updateNoteText = (id: string, text: string) => {
+    setNotes((prev) =>
+      prev.map((note) => (note.id === id ? { ...note, text } : note))
+    );
+  };
+
+  const completeNote = (id: string) => {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id
+          ? { ...note, completed: true, completedAt: new Date().toISOString() }
+          : note
+      )
+    );
+    showToast("Note completed!");
+  };
+
+  const deleteNote = (id: string) => {
+    setNotes((prev) => prev.filter((note) => note.id !== id));
+  };
+
+  const handleMouseDown = (e: React.MouseEvent, noteId: string) => {
+    const note = notes.find((n) => n.id === noteId);
+    if (!note) return;
+    setDraggedNote(noteId);
+    setDragOffset({
+      x: e.clientX - note.x,
+      y: e.clientY - note.y,
+    });
+  };
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!draggedNote) return;
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
+      setNotes((prev) =>
+        prev.map((note) =>
+          note.id === draggedNote ? { ...note, x: newX, y: newY } : note
+        )
+      );
+    },
+    [draggedNote, dragOffset]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setDraggedNote(null);
+  }, []);
+
+  useEffect(() => {
+    if (draggedNote) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [draggedNote, handleMouseMove, handleMouseUp]);
+
   const ratio =
     durationSeconds > 0 ? Math.max(0, Math.min(1, remainingSeconds / durationSeconds)) : 0;
   const coffeeMaxHeight = 9;
@@ -144,14 +236,20 @@ export default function HomePage() {
         <header className="arcade-header">
           <div className="logo-chip">
             <span className="logo-dot" />
-            Coffee Core
+            PeopleCore
           </div>
           <div className={`status-pill status-pill-${statusMode.toLowerCase()}`}>
             {statusMode}
           </div>
           <nav className="nav-links">
+            <button onClick={addNote} className="btn-add-note" title="Add Note">
+              + Note
+            </button>
             <Link href="/projects" className="nav-link">
               Projects ↗
+            </Link>
+            <Link href="/notes" className="nav-link">
+              Notes ↗
             </Link>
             <Link href="/stats" className="nav-link">
               Stats ↗
@@ -253,6 +351,46 @@ export default function HomePage() {
           <div className="hud-pill">Block: {minutesInput}m</div>
         </section>
       </div>
+
+      {notes
+        .filter((note) => !note.completed)
+        .map((note) => (
+          <div
+            key={note.id}
+            className="sticky-note"
+            style={{
+              left: `${note.x}px`,
+              top: `${note.y}px`,
+            }}
+          >
+            <div
+              className="sticky-note-header"
+              onMouseDown={(e) => handleMouseDown(e, note.id)}
+            >
+              <span className="sticky-note-drag-handle">⋮⋮</span>
+              <button
+                className="sticky-note-btn"
+                onClick={() => deleteNote(note.id)}
+                title="Delete"
+              >
+                ×
+              </button>
+            </div>
+            <textarea
+              className="sticky-note-textarea"
+              value={note.text}
+              onChange={(e) => updateNoteText(note.id, e.target.value)}
+              placeholder="Type your note..."
+              maxLength={200}
+            />
+            <button
+              className="sticky-note-complete"
+              onClick={() => completeNote(note.id)}
+            >
+              ✓ Done
+            </button>
+          </div>
+        ))}
 
       <div className={`toast ${toastMessage ? "toast-visible" : ""}`}>
         <div className="toast-dot" />

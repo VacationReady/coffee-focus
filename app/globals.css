@@ -1292,3 +1292,326 @@ input[type="number"]:focus {
   border: 1px solid rgba(243, 199, 132, 0.5);
   box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
 }
+
+/* === Sticky Notes === */
+
+.btn-add-note {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(243, 199, 132, 0.5);
+  background: linear-gradient(145deg, #fee7c4, #c8742b);
+  color: #1e0d04;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 4px 12px rgba(200, 116, 43, 0.4);
+}
+
+.btn-add-note:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(200, 116, 43, 0.6);
+}
+
+.sticky-note {
+  position: fixed;
+  width: 220px;
+  min-height: 180px;
+  background: linear-gradient(135deg, #fef9c3 0%, #fde68a 100%);
+  border-radius: 2px;
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: move;
+  z-index: 1000;
+  transform: rotate(-1deg);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  font-family: "Permanent Marker", "Comic Sans MS", cursive;
+}
+
+.sticky-note:hover {
+  transform: rotate(0deg) scale(1.02);
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+}
+
+.sticky-note::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(180deg, rgba(254, 243, 199, 0.8), transparent);
+  pointer-events: none;
+}
+
+.sticky-note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  cursor: grab;
+}
+
+.sticky-note-header:active {
+  cursor: grabbing;
+}
+
+.sticky-note-drag-handle {
+  font-size: 1.2rem;
+  color: rgba(120, 80, 20, 0.4);
+  user-select: none;
+  letter-spacing: -4px;
+}
+
+.sticky-note-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: rgba(120, 80, 20, 0.6);
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sticky-note-btn:hover {
+  background: rgba(200, 116, 43, 0.2);
+  color: #78501a;
+}
+
+.sticky-note-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: "Permanent Marker", "Comic Sans MS", cursive;
+  font-size: 0.95rem;
+  color: #3d2a1a;
+  line-height: 1.6;
+  min-height: 100px;
+}
+
+.sticky-note-textarea::placeholder {
+  color: rgba(120, 80, 20, 0.4);
+  font-style: italic;
+}
+
+.sticky-note-complete {
+  align-self: flex-end;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 2px solid rgba(120, 80, 20, 0.3);
+  background: rgba(254, 243, 199, 0.6);
+  color: #3d2a1a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: "Permanent Marker", "Comic Sans MS", cursive;
+}
+
+.sticky-note-complete:hover {
+  background: rgba(200, 116, 43, 0.3);
+  border-color: #78501a;
+  transform: scale(1.05);
+}
+
+/* === Notes Page === */
+
+.notes-shell {
+  width: min(900px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px;
+  border-radius: 30px;
+  border: 1px solid rgba(243, 199, 132, 0.4);
+  background: linear-gradient(145deg, rgba(54, 28, 13, 0.95), rgba(12, 6, 3, 0.95));
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85);
+}
+
+.notes-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notes-nav h1 {
+  margin: 0;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.notes-summary {
+  display: flex;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(243, 199, 132, 0.3);
+  background: rgba(15, 8, 4, 0.85);
+}
+
+.notes-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.notes-stat-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: rgba(248, 236, 213, 0.7);
+  text-transform: uppercase;
+}
+
+.notes-stat-value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.notes-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notes-section-title {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text);
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(243, 199, 132, 0.3);
+}
+
+.notes-empty {
+  padding: 32px;
+  text-align: center;
+  color: rgba(248, 236, 213, 0.6);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.note-card {
+  background: linear-gradient(135deg, #fef9c3 0%, #fde68a 100%);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  transform: rotate(-0.5deg);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  font-family: "Permanent Marker", "Comic Sans MS", cursive;
+}
+
+.note-card:hover {
+  transform: rotate(0deg) scale(1.02);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+.note-card-active {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.note-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.note-card-date {
+  font-size: 0.7rem;
+  color: rgba(60, 40, 20, 0.7);
+  font-family: "Geist", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.note-card-delete {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: rgba(120, 80, 20, 0.5);
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.note-card-delete:hover {
+  background: rgba(200, 116, 43, 0.2);
+  color: #78501a;
+}
+
+.note-card-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #3d2a1a;
+  line-height: 1.6;
+  min-height: 60px;
+  word-wrap: break-word;
+}
+
+.note-card-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.note-card-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  background: rgba(34, 197, 94, 0.2);
+  color: #166534;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  font-family: "Geist", sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.note-card-badge-active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #1e40af;
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.notes-note {
+  font-size: 0.8rem;
+  color: rgba(248, 236, 213, 0.7);
+  text-align: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba(243, 199, 132, 0.2);
+}

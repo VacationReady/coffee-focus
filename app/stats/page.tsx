@@ -69,7 +69,7 @@ export default function StatsPage() {
     <div className="stats-shell">
       <div className="stats-nav">
         <div className="logo-chip logo-chip-ghost">
-          Coffee Core
+          PeopleCore
         </div>
         <h1>Stats</h1>
         <Link href="/" className="nav-link">

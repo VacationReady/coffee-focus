@@ -54,7 +54,7 @@ export default function ProjectsPage() {
   return (
     <div className="projects-shell">
       <div className="projects-nav">
-        <div className="logo-chip logo-chip-ghost">Coffee Core</div>
+        <div className="logo-chip logo-chip-ghost">PeopleCore</div>
         <h1>Projects</h1>
         <nav className="nav-links">
           <Link href="/" className="nav-link">
