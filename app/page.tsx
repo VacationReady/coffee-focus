@@ -15,6 +15,14 @@ import {
   safeParseNotes,
   generateNoteId,
 } from "./lib/noteUtils";
+import {
+  FocusIntent,
+  FOCUS_INTENT_KEY,
+  PROJECTS_STORAGE_KEY,
+  addSecondsToProjectTask,
+  safeParseFocusIntent,
+  safeParseProjects,
+} from "./lib/projectUtils";
 
 export default function HomePage() {
   const [minutesInput, setMinutesInput] = useState<number>(50);
@@ -27,6 +35,7 @@ export default function HomePage() {
   const [notes, setNotes] = useState<StickyNote[]>([]);
   const [draggedNote, setDraggedNote] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [focusIntent, setFocusIntent] = useState<FocusIntent | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -34,6 +43,12 @@ export default function HomePage() {
     setSessions(safeParseSessions(raw));
     const notesRaw = window.localStorage.getItem(NOTES_STORAGE_KEY);
     setNotes(safeParseNotes(notesRaw));
+    const focusRaw = window.localStorage.getItem(FOCUS_INTENT_KEY);
+    const parsedIntent = safeParseFocusIntent(focusRaw);
+    if (parsedIntent) {
+      setFocusIntent(parsedIntent);
+      updateFromMinutes(parsedIntent.minutes);
+    }
   }, []);
 
   useEffect(() => {
@@ -60,6 +75,41 @@ export default function HomePage() {
       setToastMessage(null);
     }, 2200);
   }, []);
+
+  const clearFocusIntent = useCallback(() => {
+    setFocusIntent(null);
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.removeItem(FOCUS_INTENT_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const syncProjectsWithLog = useCallback(
+    (seconds: number) => {
+      if (!focusIntent || typeof window === "undefined") return;
+      const rawProjects = window.localStorage.getItem(PROJECTS_STORAGE_KEY);
+      const parsedProjects = safeParseProjects(rawProjects);
+      if (parsedProjects.length === 0) return;
+      const nextProjects = addSecondsToProjectTask(
+        parsedProjects,
+        focusIntent.projectId,
+        focusIntent.taskId,
+        seconds
+      );
+      if (nextProjects === parsedProjects) return;
+      try {
+        window.localStorage.setItem(
+          PROJECTS_STORAGE_KEY,
+          JSON.stringify(nextProjects)
+        );
+      } catch {
+        // ignore
+      }
+    },
+    [focusIntent]
+  );
 
   const updateFromMinutes = useCallback(
     (minValue: number) => {
@@ -91,9 +141,15 @@ export default function HomePage() {
           date: now.toISOString(),
         },
       ]);
-      showToast("Logged to your cup history.");
+      if (focusIntent) {
+        syncProjectsWithLog(clamped);
+        showToast(`Logged to ${focusIntent.projectName} • ${focusIntent.taskTitle}`);
+        clearFocusIntent();
+      } else {
+        showToast("Logged to your cup history.");
+      }
     },
-    [showToast]
+    [clearFocusIntent, focusIntent, showToast, syncProjectsWithLog]
   );
 
   const completeTimer = useCallback(() => {
@@ -232,6 +288,28 @@ export default function HomePage() {
 
   return (
     <>
+      {focusIntent && (
+        <div className="focus-intent-banner">
+          <div>
+            <p className="focus-intent-label">Focus Target</p>
+            <h4>
+              {focusIntent.projectName} · {focusIntent.taskTitle}
+            </h4>
+            <p className="focus-intent-meta">{focusIntent.minutes} min planned</p>
+          </div>
+          <div className="focus-intent-actions">
+            <button
+              className="btn btn-secondary"
+              onClick={() => updateFromMinutes(focusIntent.minutes)}
+            >
+              Load Block
+            </button>
+            <button className="btn btn-ghost" onClick={clearFocusIntent}>
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
       <div className="floating-note-launcher">
         <button onClick={addNote} className="btn-add-note" title="Add Note">
           + Note
