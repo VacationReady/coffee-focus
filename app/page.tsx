@@ -127,7 +127,10 @@ export default function HomePage() {
 
   const ratio =
     durationSeconds > 0 ? Math.max(0, Math.min(1, remainingSeconds / durationSeconds)) : 0;
-  const fillPercent = ratio * 100;
+  const coffeeMaxHeight = 9;
+  const coffeeBaseY = 23;
+  const coffeeHeight = coffeeMaxHeight * ratio;
+  const coffeeY = coffeeBaseY - coffeeHeight;
 
   const statusMode = isRunning
     ? "RUN"
@@ -146,30 +149,50 @@ export default function HomePage() {
           <div className={`status-pill status-pill-${statusMode.toLowerCase()}`}>
             {statusMode}
           </div>
-          <Link href="/stats" className="nav-link">
-            Stats ↗
-          </Link>
+          <nav className="nav-links">
+            <Link href="/projects" className="nav-link">
+              Projects ↗
+            </Link>
+            <Link href="/stats" className="nav-link">
+              Stats ↗
+            </Link>
+          </nav>
         </header>
 
         <section className="mug-stage">
           <div className="crt-frame">
             <div className="scanline" />
-            <div className="coffee-cup">
-              <div className="coffee-lip" />
-              <div
-                className="coffee-liquid"
-                style={{ height: `${fillPercent}%` }}
-              />
-              <div className="coffee-foam" />
-              <div className="coffee-glare" />
-              <div className="coffee-handle" />
+            <div className="pixel-pot" aria-hidden="true">
+              <svg
+                className="pixel-pot-svg"
+                viewBox="0 0 32 32"
+                role="presentation"
+              >
+                <rect x="4" y="3" width="24" height="3" fill="#5a2b15" />
+                <rect x="4" y="6" width="24" height="3" fill="#7c3a1b" />
+                <rect x="4" y="9" width="24" height="1" fill="#120601" />
+                <rect x="4" y="9" width="24" height="16" fill="#120601" />
+                <rect x="5" y="10" width="22" height="14" fill="#fef4db" />
+                <rect x="6" y="12" width="20" height="10" fill="#e0d2bb" />
+                <rect
+                  x="7"
+                  width="18"
+                  y={coffeeY}
+                  height={coffeeHeight}
+                  fill="#5e1d0f"
+                />
+                <rect x="6" y="15" width="20" height="2" fill="#f8ecda" />
+                <rect x="6" y="22" width="20" height="2" fill="#cbbba4" />
+                <rect x="24" y="11" width="5" height="12" fill="#5a2717" />
+                <rect x="25" y="12" width="3" height="10" fill="#341109" />
+                <rect x="4" y="25" width="24" height="2" fill="#100601" />
+                <rect x="6" y="26" width="20" height="2" fill="#fef4db" />
+                <rect x="7" y="27" width="18" height="2" fill="#f4e5cc" />
+                <rect x="8" y="28" width="16" height="1" fill="#ffffff" opacity="0.4" />
+                <rect x="9" y="11" width="8" height="2" fill="#ffffff" opacity="0.5" />
+                <rect x="10" y="13" width="4" height="1" fill="#ffffff" opacity="0.5" />
+              </svg>
             </div>
-            <div className="steam">
-              <div className="steam-line" />
-              <div className="steam-line" />
-              <div className="steam-line" />
-            </div>
-            <div className="mug-plate" />
           </div>
         </section>
 
@@ -194,24 +217,6 @@ export default function HomePage() {
                 value={minutesInput}
                 onChange={(e) => updateFromMinutes(Number(e.target.value))}
               />
-            </div>
-            <div className="field-group">
-              <label>Presets</label>
-              <div className="preset-row">
-                {[25, 45, 60, 90].map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    className="preset-btn"
-                    onClick={() => {
-                      updateFromMinutes(m);
-                      resetTimer();
-                    }}
-                  >
-                    {m}m
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
 
