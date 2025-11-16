@@ -13,6 +13,12 @@
   --shadow-soft: 0 24px 70px rgba(7, 4, 2, 0.8);
   --shadow-inner: inset 0 0 28px rgba(0, 0, 0, 0.55);
 }
+.floating-note-launcher {
+  position: fixed;
+  top: 26px;
+  left: 26px;
+  z-index: 1200;
+}
 
 * {
   box-sizing: border-box;

@@ -232,6 +232,11 @@ export default function HomePage() {
 
   return (
     <>
+      <div className="floating-note-launcher">
+        <button onClick={addNote} className="btn-add-note" title="Add Note">
+          + Note
+        </button>
+      </div>
       <div className="arcade-shell">
         <header className="arcade-header">
           <div className="logo-chip">
@@ -242,9 +247,6 @@ export default function HomePage() {
             {statusMode}
           </div>
           <nav className="nav-links">
-            <button onClick={addNote} className="btn-add-note" title="Add Note">
-              + Note
-            </button>
             <Link href="/projects" className="nav-link">
               Projects ↗
             </Link>
