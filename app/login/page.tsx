@@ -66,15 +66,16 @@ export default function LoginPage() {
           </div>
 
           <div className="showcase-copy">
-            <p className="eyebrow">Evening station</p>
-            <h2>Settle back in.</h2>
+            <p className="eyebrow">BRAINSTORMING STATION</p>
+            <h2>Bold ideas creates success</h2>
             <p>
-              Cozy rituals, guided prompts, and warm lighting cues keep your workflow gentle and intentional.
+              Track all activities through PeopleCore Focus, understand where time is better spent, what's going well
+              and why
             </p>
           </div>
 
           <div className="ritual-card">
-            <p className="ritual-title">Tonight&apos;s ritual</p>
+            <p className="ritual-title">Our Ethos</p>
             <ul>
               <li>
                 <span className="ritual-icon ritual-icon-mug" aria-hidden="true">
@@ -85,8 +86,8 @@ export default function LoginPage() {
                   </svg>
                 </span>
                 <div>
-                  <strong>Brew intention</strong>
-                  <small>Savor a pour-over while writing what matters.</small>
+                  <strong>Build what matters.</strong>
+                  <small>Improve it relentlessly</small>
                 </div>
               </li>
               <li>
@@ -99,8 +100,8 @@ export default function LoginPage() {
                   </svg>
                 </span>
                 <div>
-                  <strong>Capture notes</strong>
-                  <small>Park stray thoughts in your project notebook.</small>
+                  <strong>Serve the customer,</strong>
+                  <small>simplify the complex.</small>
                 </div>
               </li>
               <li>
@@ -111,8 +112,8 @@ export default function LoginPage() {
                   </svg>
                 </span>
                 <div>
-                  <strong>Log focus blocks</strong>
-                  <small>Protect two deep work windows tonight.</small>
+                  <strong>Ship boldly.</strong>
+                  <small>Learn fast. Grow together.</small>
                 </div>
               </li>
             </ul>
@@ -130,10 +131,10 @@ export default function LoginPage() {
         <section className="login-panel">
           <div className="login-card">
             <div className="login-card-header">
-              <p className="login-tag">Coffee Focus</p>
+              <p className="login-tag">PeopleCore Coffee</p>
               <h1>Welcome back</h1>
               <p className="login-subtitle">
-                Your notes, focus blocks, and rituals follow you across every cozy session.
+                The internal tool for monitoring all PeopleCore activity
               </p>
             </div>
 
@@ -169,11 +170,6 @@ export default function LoginPage() {
             <button type="button" className="login-social" onClick={handleGithubSignIn}>
               Sign in with GitHub
             </button>
-
-            <div className="login-hint">
-              <p>Seed account</p>
-              <code>michael.dowdle@hotmail.com / Admin123!</code>
-            </div>
           </div>
         </section>
       </div>

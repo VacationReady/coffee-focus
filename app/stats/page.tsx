@@ -72,6 +72,7 @@ export default async function StatsPage() {
 
   const last7Values = last7Keys.map((key) => totalsByDay.get(key) || 0);
   const maxVal = Math.max(...last7Values, 1);
+  const hasAnySessions = sessions.length > 0;
 
   return (
     <div className="stats-shell">
@@ -106,36 +107,48 @@ export default async function StatsPage() {
         </div>
       </div>
 
-      <div className="stats-chart">
-        <div className="chart-header-row">
-          <div className="chart-title">Last 7 days</div>
-          <div className="chart-legend">
-            <div className="chart-legend-item">
-              <span className="legend-dot" /> Focused minutes
+      {hasAnySessions ? (
+        <>
+          <div className="stats-chart">
+            <div className="chart-header-row">
+              <div className="chart-title">Last 7 days</div>
+              <div className="chart-legend">
+                <div className="chart-legend-item">
+                  <span className="legend-dot" /> Focused minutes
+                </div>
+              </div>
+            </div>
+            <div className="stats-chart-body">
+              {last7Keys.map((key, idx) => {
+                const date = new Date(now);
+                date.setDate(date.getDate() - (6 - idx));
+                const weekdayShort = date.toLocaleDateString(undefined, { weekday: "short" }).toUpperCase();
+                const value = last7Values[idx];
+                const heightPercent = (value / maxVal) * 100;
+                const minutes = Math.round(value / 60);
+
+                return (
+                  <div key={key} className="stats-chart-col">
+                    <div className={`stats-chart-bar ${value <= 0 ? "stats-chart-bar-empty" : ""}`} style={{ height: `${heightPercent}%` }} />
+                    <span>{weekdayShort}</span>
+                    <strong>{minutes > 0 ? `${minutes}m` : "–"}</strong>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
-        <div className="stats-chart-body">
-          {last7Keys.map((key, idx) => {
-            const date = new Date(now);
-            date.setDate(date.getDate() - (6 - idx));
-            const weekdayShort = date.toLocaleDateString(undefined, { weekday: "short" }).toUpperCase();
-            const value = last7Values[idx];
-            const heightPercent = (value / maxVal) * 100;
-            const minutes = Math.round(value / 60);
 
-            return (
-              <div key={key} className="stats-chart-col">
-                <div className={`stats-chart-bar ${value <= 0 ? "stats-chart-bar-empty" : ""}`} style={{ height: `${heightPercent}%` }} />
-                <span>{weekdayShort}</span>
-                <strong>{minutes > 0 ? `${minutes}m` : "–"}</strong>
-              </div>
-            );
-          })}
+          <div className="stats-note">Sessions sync with your account. Log time from the timer ritual to watch this garden bloom.</div>
+        </>
+      ) : (
+        <div className="stats-empty">
+          <h2>No focus history yet</h2>
+          <p>Start your first block from the timer screen and we’ll begin growing this view with your sessions.</p>
+          <Link href="/" className="nav-link nav-link-cta">
+            Jump to timer ↗
+          </Link>
         </div>
-      </div>
-
-      <div className="stats-note">Sessions sync with your account. Log time from the timer ritual to watch this garden bloom.</div>
+      )}
     </div>
   );
 }

@@ -1208,6 +1208,12 @@ input[type="number"]:focus {
   color: rgba(248, 236, 213, 0.85);
 }
 
+.hud-pill-meta {
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
 /* === Stats page === */
 
 .stats-shell {
@@ -1303,6 +1309,31 @@ input[type="number"]:focus {
   font-size: 0.8rem;
   color: rgba(248, 236, 213, 0.8);
   text-align: center;
+}
+
+.stats-empty {
+  margin-top: 20px;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px dashed rgba(243, 199, 132, 0.4);
+  background: rgba(15, 8, 4, 0.9);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stats-empty h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.stats-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(248, 236, 213, 0.78);
 }
 
 .toast-label {

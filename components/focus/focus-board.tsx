@@ -714,7 +714,12 @@ export function FocusBoard({ initialProjects, initialStickyNotes, userName }: Fo
               </button>
             </div>
 
-            <div className="hud-pill">Block: {minutesInput}m</div>
+            <div className="hud-pill">
+              Block: {minutesInput}m
+              {focusIntent ? (
+                <span className="hud-pill-meta"> · {focusIntent.projectName}</span>
+              ) : null}
+            </div>
           </section>
         </div>
       </div>
@@ -797,7 +802,11 @@ export function FocusBoard({ initialProjects, initialStickyNotes, userName }: Fo
         </div>
       ))}
 
-      <div className={`toast ${toastMessage ? "toast-visible" : ""}`}>
+      <div
+        className={`toast ${toastMessage ? "toast-visible" : ""}`}
+        role="status"
+        aria-live="polite"
+      >
         <div className="toast-dot" />
         <div className="toast-label">Session</div>
         <div>{toastMessage || "Logged to your cup history."}</div>
