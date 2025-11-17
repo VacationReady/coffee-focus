@@ -28,9 +28,8 @@ export default function LoginPage() {
       callbackUrl: "/",
     });
 
-    setIsSubmitting(false);
-
     if (result?.error) {
+      setIsSubmitting(false);
       setError("Invalid login. Check your details and try again.");
       return;
     }
@@ -39,6 +38,7 @@ export default function LoginPage() {
   };
 
   const handleGithubSignIn = () => {
+    setIsSubmitting(true);
     signIn("github", { callbackUrl: "/" });
   };
 
@@ -46,7 +46,7 @@ export default function LoginPage() {
     <div className="login-scene">
       <div className="login-background login-background-top" aria-hidden="true" />
       <div className="login-background login-background-bottom" aria-hidden="true" />
-      <div className="login-frame">
+      <div className="login-frame" aria-busy={isSubmitting}>
         <aside className="login-showcase">
           <div className="showcase-window" aria-hidden="true">
             <div className="window-frame">
@@ -67,7 +67,7 @@ export default function LoginPage() {
 
           <div className="showcase-copy">
             <p className="eyebrow">BRAINSTORMING STATION</p>
-            <h2>Bold ideas creates success</h2>
+            <h2>Bold ideas create success</h2>
             <p>
               Track all activities through PeopleCore Focus, understand where time is better spent, what's going well
               and why
@@ -86,8 +86,7 @@ export default function LoginPage() {
                   </svg>
                 </span>
                 <div>
-                  <strong>Build what matters.</strong>
-                  <small>Improve it relentlessly</small>
+                  <strong>Build what matters. Improve it relentlessly.</strong>
                 </div>
               </li>
               <li>
@@ -100,8 +99,7 @@ export default function LoginPage() {
                   </svg>
                 </span>
                 <div>
-                  <strong>Serve the customer,</strong>
-                  <small>simplify the complex.</small>
+                  <strong>Serve the customer, simplify the complex.</strong>
                 </div>
               </li>
               <li>
@@ -112,8 +110,7 @@ export default function LoginPage() {
                   </svg>
                 </span>
                 <div>
-                  <strong>Ship boldly.</strong>
-                  <small>Learn fast. Grow together.</small>
+                  <strong>Ship boldly. Learn fast. Grow together.</strong>
                 </div>
               </li>
             </ul>
@@ -157,7 +154,7 @@ export default function LoginPage() {
               {error ? <p className="login-error">{error}</p> : null}
 
               <button type="submit" className="login-submit" disabled={isSubmitting}>
-                {isSubmitting ? "Lighting the fire..." : "Enter the cabin"}
+                {isSubmitting ? "Entering the vault..." : "Enter the vault"}
               </button>
             </form>
 
@@ -173,6 +170,20 @@ export default function LoginPage() {
           </div>
         </section>
       </div>
+
+      {isSubmitting ? (
+        <div className="login-loading-overlay" role="status" aria-live="polite">
+          <div className="login-loading-fire" aria-hidden="true">
+            <div className="login-fire-base" />
+            <div className="login-fire-core" />
+            <div className="login-fire-flame flame-one" />
+            <div className="login-fire-flame flame-two" />
+            <div className="login-fire-ember ember-one" />
+            <div className="login-fire-ember ember-two" />
+          </div>
+          <p className="login-loading-text">Entering the vault</p>
+        </div>
+      ) : null}
     </div>
   );
 }
