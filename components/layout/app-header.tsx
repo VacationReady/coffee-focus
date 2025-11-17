@@ -24,6 +24,8 @@ function getInitials(name?: string | null, email?: string | null) {
   return email ? email[0]?.toUpperCase() ?? "?" : "?";
 }
 
+const HIDDEN_PATHS = new Set<string>(["/"]);
+
 export function AppHeader() {
   const pathname = usePathname();
   const session = useSession();
@@ -31,7 +33,7 @@ export function AppHeader() {
   const isAuthed = session.status === "authenticated" && Boolean(session.data?.user?.id);
   const initials = isAuthed ? getInitials(session.data?.user?.name, session.data?.user?.email) : undefined;
 
-  if (!isAuthed) {
+  if (!isAuthed || HIDDEN_PATHS.has(pathname)) {
     return null;
   }
 
