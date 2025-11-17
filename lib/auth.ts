@@ -1,3 +1,5 @@
+import { createHash, randomBytes } from "crypto";
+
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import NextAuth, { getServerSession, type NextAuthOptions } from "next-auth";
@@ -5,6 +7,23 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 
 import { prisma } from "./prisma";
+
+function resolveAuthSecret() {
+  const directSecret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  if (directSecret) {
+    return directSecret;
+  }
+
+  if (process.env.DATABASE_URL) {
+    return createHash("sha256").update(process.env.DATABASE_URL).digest("hex");
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    return randomBytes(32).toString("hex");
+  }
+
+  throw new Error("NEXTAUTH_SECRET (or AUTH_SECRET) must be set");
+}
 
 const credentialProvider = CredentialsProvider({
   name: "Credentials",
@@ -66,7 +85,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: resolveAuthSecret(),
 };
 
 const handler = NextAuth(authOptions);
