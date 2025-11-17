@@ -44,45 +44,70 @@ export default function LoginPage() {
 
   return (
     <div className="login-scene">
-      <div className="login-sky-glow" />
-      <div className="login-window">
-        <section className="login-atmosphere">
-          <div className="cabin-shelf">
-            <div className="coffee-cup">
-              <div className="coffee-steam steam-1" />
-              <div className="coffee-steam steam-2" />
-              <div className="coffee-steam steam-3" />
-              <div className="coffee-liquid" />
-            </div>
-            <div className="whiteboard">
-              <span className="whiteboard-pin" />
-              <div className="whiteboard-content">
-                <p>Focus Ritual</p>
-                <ul>
-                  <li>☕️ Brew intention</li>
-                  <li>✍️ Capture notes</li>
-                  <li>🔥 Log focus blocks</li>
-                </ul>
+      <div className="login-background login-background-top" aria-hidden="true" />
+      <div className="login-background login-background-bottom" aria-hidden="true" />
+      <div className="login-frame">
+        <aside className="login-showcase">
+          <div className="showcase-window" aria-hidden="true">
+            <div className="window-frame">
+              <div className="window-night">
+                <span className="window-moon" />
+                <span className="window-star star-one" />
+                <span className="window-star star-two" />
+                <span className="window-star star-three" />
+                <span className="window-hill hill-one" />
+                <span className="window-hill hill-two" />
               </div>
+            </div>
+            <div className="window-lamp">
+              <span className="lamp-base" />
+              <span className="lamp-light" />
             </div>
           </div>
 
-          <div className="fireplace">
-            <div className="fireplace-mantle" />
-            <div className="fireplace-chamber">
-              <div className="flame flame-one" />
-              <div className="flame flame-two" />
-              <div className="flame flame-three" />
-              <div className="ember ember-one" />
-              <div className="ember ember-two" />
-            </div>
-            <div className="firewood">
-              <span />
-              <span />
-              <span />
-            </div>
+          <div className="showcase-copy">
+            <p className="eyebrow">Coffee Focus</p>
+            <h2>Settle back in.</h2>
+            <p>
+              Cozy rituals, guided prompts, and warm lighting cues keep your workflow gentle and intentional.
+            </p>
           </div>
-        </section>
+
+          <div className="ritual-card">
+            <p className="ritual-title">Tonight&apos;s ritual</p>
+            <ul>
+              <li>
+                <span>☕</span>
+                <div>
+                  <strong>Brew intention</strong>
+                  <small>Savor a pour-over while writing what matters.</small>
+                </div>
+              </li>
+              <li>
+                <span>🗂️</span>
+                <div>
+                  <strong>Capture notes</strong>
+                  <small>Park stray thoughts in your project notebook.</small>
+                </div>
+              </li>
+              <li>
+                <span>🔥</span>
+                <div>
+                  <strong>Log focus blocks</strong>
+                  <small>Protect two deep work windows tonight.</small>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div className="session-pill">
+            <div>
+              <p>Next focus window</p>
+              <strong>08:00 PM · Cabin mode</strong>
+            </div>
+            <span className="session-pill-dot" aria-hidden="true" />
+          </div>
+        </aside>
 
         <section className="login-panel">
           <div className="login-card">
