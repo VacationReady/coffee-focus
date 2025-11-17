@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectTaskStatus {
+  backlog
+  active
+  blocked
+  done
+}
+
+enum FocusSessionStatus {
+  running
+  completed
+  cancelled
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String?         @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?         @db.Text
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  projects      Project[]
+  stickyNotes   StickyNote[]
+  focusSessions FocusSession[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  refresh_token_expires_in Int?
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Project {
+  id               String        @id @default(cuid())
+  name             String
+  summary          String
+  chips            String[]      @default([])
+  focusGoalMinutes Int?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  owner   User?    @relation(fields: [userId], references: [id])
+  userId  String?
+
+  tasks  ProjectTask[]
+  notes  ProjectNote[]
+  focusSessions FocusSession[]
+  stickyNotes   StickyNote[]
+}
+
+model ProjectTask {
+  id             String            @id @default(cuid())
+  title          String
+  status         ProjectTaskStatus @default(backlog)
+  estimateMinutes Int?
+  loggedSeconds  Int               @default(0)
+  owner          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+
+  focusSessions FocusSession[]
+}
+
+model ProjectNote {
+  id        String   @id @default(cuid())
+  body      String
+  author    String
+  createdAt DateTime @default(now())
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+}
+
+model StickyNote {
+  id          String   @id @default(cuid())
+  text        String   @default("")
+  x           Int      @default(100)
+  y           Int      @default(100)
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  user    User?    @relation(fields: [userId], references: [id])
+  userId  String?
+
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
+}
+
+model FocusSession {
+  id             String             @id @default(cuid())
+  durationSeconds Int               @default(0)
+  status         FocusSessionStatus @default(completed)
+  note           String?            @db.Text
+  startedAt      DateTime           @default(now())
+  completedAt    DateTime?
+
+  user    User?    @relation(fields: [userId], references: [id])
+  userId  String?
+
+  project   Project?    @relation(fields: [projectId], references: [id])
+  projectId String?
+
+  task      ProjectTask? @relation(fields: [projectTaskId], references: [id])
+  projectTaskId String?
+}
