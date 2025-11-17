@@ -1,7 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import NextAuth, { getServerSession, type NextAuthOptions } from "next-auth";
-import type { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 
@@ -35,7 +34,7 @@ const credentialProvider = CredentialsProvider({
   },
 });
 
-const providers: Provider[] = [credentialProvider];
+const providers: NextAuthOptions["providers"] = [credentialProvider];
 
 if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
   providers.push(
