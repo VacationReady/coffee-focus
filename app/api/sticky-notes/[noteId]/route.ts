@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import {
@@ -17,10 +17,13 @@ import {
 } from "@/lib/sticky-note-helpers";
 
 type RouteContext = {
-  params: {
-    noteId: string;
-  };
+  params: Promise<{ noteId: string }>;
 };
+
+async function resolveNoteId(context: RouteContext) {
+  const { noteId } = await context.params;
+  return noteId;
+}
 
 type UpdateStickyNotePayload = {
   text?: string;
@@ -38,20 +41,22 @@ async function fetchNoteOrThrow(noteId: string, userId: string) {
   return note;
 }
 
-export const GET = async (_request: Request, { params }: RouteContext) => {
+export const GET = async (_request: NextRequest, context: RouteContext) => {
   try {
     const { userId } = await requireUser();
-    const note = await fetchNoteOrThrow(params.noteId, userId);
+    const noteId = await resolveNoteId(context);
+    const note = await fetchNoteOrThrow(noteId, userId);
     return NextResponse.json({ note: serializeStickyNote(note) });
   } catch (error) {
     return handleApiError(error);
   }
 };
 
-export const PATCH = async (request: Request, { params }: RouteContext) => {
+export const PATCH = async (request: NextRequest, context: RouteContext) => {
   try {
     const { userId } = await requireUser();
-    const note = await fetchNoteOrThrow(params.noteId, userId);
+    const noteId = await resolveNoteId(context);
+    const note = await fetchNoteOrThrow(noteId, userId);
     const body = await parseJson<UpdateStickyNotePayload>(request);
 
     const data: Record<string, unknown> = {};
@@ -97,10 +102,11 @@ export const PATCH = async (request: Request, { params }: RouteContext) => {
   }
 };
 
-export const DELETE = async (_request: Request, { params }: RouteContext) => {
+export const DELETE = async (_request: NextRequest, context: RouteContext) => {
   try {
     const { userId } = await requireUser();
-    const note = await fetchNoteOrThrow(params.noteId, userId);
+    const noteId = await resolveNoteId(context);
+    const note = await fetchNoteOrThrow(noteId, userId);
     await prisma.stickyNote.delete({ where: { id: note.id } });
     return NextResponse.json({ ok: true });
   } catch (error) {
