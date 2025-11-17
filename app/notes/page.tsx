@@ -1,51 +1,36 @@
-"use client";
-
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import { redirect } from "next/navigation";
 
-import {
-  StickyNote,
-  NOTES_STORAGE_KEY,
-  safeParseNotes,
-} from "../lib/noteUtils";
+import { getServerAuthSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export default function NotesPage() {
-  const [notes, setNotes] = useState<StickyNote[]>([]);
+type Note = Awaited<ReturnType<typeof prisma.stickyNote.findMany>>[number];
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const raw = window.localStorage.getItem(NOTES_STORAGE_KEY);
-    setNotes(safeParseNotes(raw));
-  }, []);
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
-  const completedNotes = notes.filter((note) => note.completed);
-  const activeNotes = notes.filter((note) => !note.completed);
+export default async function NotesPage() {
+  const session = await getServerAuthSession();
 
-  const deleteNote = (id: string) => {
-    const updatedNotes = notes.filter((note) => note.id !== id);
-    setNotes(updatedNotes);
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem(
-          NOTES_STORAGE_KEY,
-          JSON.stringify(updatedNotes)
-        );
-      } catch {
-        // ignore
-      }
-    }
-  };
+  if (!session?.user?.id) {
+    return redirect("/login");
+  }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const notes: Note[] = await prisma.stickyNote.findMany({
+    where: { userId: session.user.id },
+    orderBy: [{ completed: "asc" }, { createdAt: "desc" }],
+  });
+
+  const activeNotes = notes.filter((note: Note) => !note.completed);
+  const completedNotes = notes.filter((note: Note) => note.completed);
 
   return (
     <div className="notes-shell">
@@ -77,20 +62,9 @@ export default function NotesPage() {
             {completedNotes.map((note) => (
               <div key={note.id} className="note-card">
                 <div className="note-card-header">
-                  <span className="note-card-date">
-                    {formatDate(note.completedAt || note.createdAt)}
-                  </span>
-                  <button
-                    className="note-card-delete"
-                    onClick={() => deleteNote(note.id)}
-                    title="Delete"
-                  >
-                    ×
-                  </button>
+                  <span className="note-card-date">{formatDate(note.completedAt?.toISOString() ?? note.createdAt.toISOString())}</span>
                 </div>
-                <p className="note-card-text">
-                  {note.text || "(Empty note)"}
-                </p>
+                <p className="note-card-text">{note.text || "(Empty note)"}</p>
                 <div className="note-card-footer">
                   <span className="note-card-badge">✓ Done</span>
                 </div>
@@ -109,20 +83,9 @@ export default function NotesPage() {
             {activeNotes.map((note) => (
               <div key={note.id} className="note-card note-card-active">
                 <div className="note-card-header">
-                  <span className="note-card-date">
-                    {formatDate(note.createdAt)}
-                  </span>
-                  <button
-                    className="note-card-delete"
-                    onClick={() => deleteNote(note.id)}
-                    title="Delete"
-                  >
-                    ×
-                  </button>
+                  <span className="note-card-date">{formatDate(note.createdAt.toISOString())}</span>
                 </div>
-                <p className="note-card-text">
-                  {note.text || "(Empty note)"}
-                </p>
+                <p className="note-card-text">{note.text || "(Empty note)"}</p>
                 <div className="note-card-footer">
                   <span className="note-card-badge note-card-badge-active">In Progress</span>
                 </div>
@@ -133,7 +96,7 @@ export default function NotesPage() {
       </section>
 
       <div className="notes-note">
-        Notes are stored locally in your browser. Complete notes from the timer page to archive them here.
+        Notes sync with your cabin wall. Complete things from the timer page to archive them here.
       </div>
     </div>
   );

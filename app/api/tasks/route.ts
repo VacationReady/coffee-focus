@@ -7,8 +7,7 @@ import {
   requireUser,
   withRouteErrorHandling,
 } from "@/lib/api-helpers";
-import { projectInclude } from "@/lib/project-query";
-import { serializeProject, serializeProjectTask } from "@/lib/serializers";
+import { serializeProjectTask } from "@/lib/serializers";
 import {
   ensureProjectAccess,
   normalizeTaskStatus,

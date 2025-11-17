@@ -1,36 +1,45 @@
-"use client";
-
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import { redirect } from "next/navigation";
 
-import {
-  Session,
-  STORAGE_KEY,
-  formatSecondsToMinutesLabel,
-  safeParseSessions,
-  getDayKey,
-} from "../lib/sessionUtils";
+import { getServerAuthSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export default function StatsPage() {
-  const [sessions, setSessions] = useState<Session[]>([]);
+type FocusSessionRecord = Awaited<ReturnType<typeof prisma.focusSession.findMany>>[number];
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    setSessions(safeParseSessions(raw));
-  }, []);
+function formatSecondsToMinutesLabel(seconds: number): string {
+  const totalMinutes = Math.round(Math.max(0, seconds) / 60);
+  if (totalMinutes < 60) return `${totalMinutes} min`;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return minutes === 0 ? `${hours} h` : `${hours} h ${minutes} min`;
+}
+
+function getDayKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+export default async function StatsPage() {
+  const session = await getServerAuthSession();
+
+  if (!session?.user?.id) {
+    return redirect("/login");
+  }
+
+  const sessions: FocusSessionRecord[] = await prisma.focusSession.findMany({
+    where: { userId: session.user.id },
+    orderBy: { startedAt: "desc" },
+  });
 
   const now = new Date();
   const totalsByDay = new Map<string, number>();
   let totalAll = 0;
 
-  sessions.forEach((s) => {
-    const d = new Date(s.date);
-    const key = getDayKey(d);
+  sessions.forEach((session: FocusSessionRecord) => {
+    const key = getDayKey(session.startedAt);
     const prev = totalsByDay.get(key) || 0;
-    const val = prev + s.seconds;
+    const val = prev + session.durationSeconds;
     totalsByDay.set(key, val);
-    totalAll += s.seconds;
+    totalAll += session.durationSeconds;
   });
 
   const todayKey = getDayKey(now);
@@ -38,29 +47,28 @@ export default function StatsPage() {
 
   const last7Keys: string[] = [];
   let total7 = 0;
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const key = getDayKey(d);
+  for (let i = 6; i >= 0; i -= 1) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    const key = getDayKey(date);
     last7Keys.push(key);
     total7 += totalsByDay.get(key) || 0;
   }
 
   let streak = 0;
-  for (let i = 0; i < 30; i++) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const key = getDayKey(d);
-    if ((totalsByDay.get(key) || 0) > 0) streak++;
-    else break;
+  for (let i = 0; i < 30; i += 1) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    const key = getDayKey(date);
+    if ((totalsByDay.get(key) || 0) > 0) {
+      streak += 1;
+    } else {
+      break;
+    }
   }
 
   const streakLabel =
-    streak === 0
-      ? "No streak yet — start today."
-      : streak === 1
-      ? "1 day of focus"
-      : `${streak} days of focus`;
+    streak === 0 ? "No streak yet — start today." : streak === 1 ? "1 day of focus" : `${streak} days of focus`;
 
   const last7Values = last7Keys.map((key) => totalsByDay.get(key) || 0);
   const maxVal = Math.max(...last7Values, 1);
@@ -68,9 +76,7 @@ export default function StatsPage() {
   return (
     <div className="stats-shell">
       <div className="stats-nav">
-        <div className="logo-chip logo-chip-ghost">
-          PeopleCore
-        </div>
+        <div className="logo-chip logo-chip-ghost">PeopleCore</div>
         <h1>Stats</h1>
         <Link href="/" className="nav-link">
           Back ↩
@@ -111,21 +117,16 @@ export default function StatsPage() {
         </div>
         <div className="stats-chart-body">
           {last7Keys.map((key, idx) => {
-            const d = new Date(now);
-            d.setDate(d.getDate() - (6 - idx));
-            const weekdayShort = d
-              .toLocaleDateString(undefined, { weekday: "short" })
-              .toUpperCase();
+            const date = new Date(now);
+            date.setDate(date.getDate() - (6 - idx));
+            const weekdayShort = date.toLocaleDateString(undefined, { weekday: "short" }).toUpperCase();
             const value = last7Values[idx];
             const heightPercent = (value / maxVal) * 100;
             const minutes = Math.round(value / 60);
 
             return (
               <div key={key} className="stats-chart-col">
-                <div
-                  className={`stats-chart-bar ${value <= 0 ? "stats-chart-bar-empty" : ""}`}
-                  style={{ height: `${heightPercent}%` }}
-                />
+                <div className={`stats-chart-bar ${value <= 0 ? "stats-chart-bar-empty" : ""}`} style={{ height: `${heightPercent}%` }} />
                 <span>{weekdayShort}</span>
                 <strong>{minutes > 0 ? `${minutes}m` : "–"}</strong>
               </div>
@@ -134,9 +135,7 @@ export default function StatsPage() {
         </div>
       </div>
 
-      <div className="stats-note">
-        Sessions live in your browser. No account. No sync. Just coffee.
-      </div>
+      <div className="stats-note">Sessions sync with your account. Log time from the timer ritual to watch this garden bloom.</div>
     </div>
   );
 }

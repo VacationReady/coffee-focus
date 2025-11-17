@@ -57,12 +57,14 @@ export function handleApiError(error: unknown) {
   return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
 }
 
-export function withRouteErrorHandling<T extends (...args: any[]) => Promise<Response>>(handler: T): T {
-  return (async (...args: Parameters<T>) => {
+export function withRouteErrorHandling<TArgs extends unknown[]>(
+  handler: (...args: TArgs) => Promise<Response>
+): (...args: TArgs) => Promise<Response> {
+  return (async (...args: TArgs) => {
     try {
       return await handler(...args);
     } catch (error) {
       return handleApiError(error);
     }
-  }) as T;
+  });
 }

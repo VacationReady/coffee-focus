@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import {
-  ValidationError,
-  parseJson,
-  requireUser,
-  withRouteErrorHandling,
-} from "@/lib/api-helpers";
+import { parseJson, requireUser, withRouteErrorHandling } from "@/lib/api-helpers";
 import { serializeStickyNote } from "@/lib/serializers";
 import {
   DEFAULT_STICKY_POSITION,

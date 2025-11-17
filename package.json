@@ -19,17 +19,18 @@
     "next": "16.0.3",
     "next-auth": "^4.24.8",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "swr": "^2.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/bcryptjs": "^2.4.6",
+    "dotenv": "^16.4.5",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
-    "dotenv": "^16.4.5",
     "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "typescript": "^5"

@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Coffee Focus
 
-## Getting Started
+An authenticated productivity cockpit for tracking focus sessions, sticky notes, and project rituals. Built with Next.js App Router, NextAuth, Prisma, PostgreSQL, and SWR-powered client interactions.
 
-First, run the development server:
+## Requirements
+
+- Node.js 18+
+- PostgreSQL database
+- npm (ships with Node)
+
+## Environment
+
+Copy the example env file and fill in the secrets:
+
+```bash
+cp .env.example .env.local
+```
+
+`DATABASE_URL`, `NEXTAUTH_SECRET`, and the OAuth credentials (e.g. GitHub) must be set before running migrations or the app.
+
+## Setup
+
+```bash
+npm install
+npx prisma migrate dev
+npm run seed:user
+```
+
+- `npx prisma migrate dev` applies the latest Prisma schema to your local database.
+- `npm run seed:user` creates a demo user for local login.
+
+## Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit http://localhost:3000 and sign in with the seeded credentials.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quality & Verification
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run this before committing to ensure the project satisfies the lint rules enforced in CI.
