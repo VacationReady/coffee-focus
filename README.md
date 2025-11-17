@@ -37,6 +37,15 @@ npm run dev
 
 Visit http://localhost:3000 and sign in with the seeded credentials.
 
+## Deployment
+
+When deploying to production (e.g., Vercel), ensure these environment variables are set:
+
+- `DATABASE_URL` - Your PostgreSQL connection string
+- `NEXTAUTH_SECRET` - A secure random string (use `openssl rand -base64 32`)
+- `NEXTAUTH_URL` - Your production URL (e.g., `https://your-app.vercel.app`)
+- `GITHUB_ID` and `GITHUB_SECRET` - (Optional) For GitHub OAuth
+
 ## Quality & Verification
 
 ```bash
