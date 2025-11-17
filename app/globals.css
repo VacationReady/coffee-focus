@@ -52,8 +52,8 @@ body:not(:has(.login-scene)) {
 /* Layout */
 
 .app-shell {
-  width: 100%;
-  max-width: 1100px;
+  width: min(calc(100vw - 64px), 1400px);
+  max-width: 1400px;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
   gap: 28px;
@@ -789,10 +789,10 @@ input[type="number"]:focus {
 /* === Arcade focus screen === */
 
 .arcade-shell {
-  width: min(440px, 100%);
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 26px;
+  gap: 24px;
   padding: 26px;
   border-radius: 28px;
   border: 1px solid rgba(243, 199, 132, 0.4);
@@ -814,9 +814,19 @@ input[type="number"]:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   position: relative;
   z-index: 1;
+}
+
+.arcade-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.arcade-header-actions {
+  margin-left: auto;
 }
 
 .logo-chip {
@@ -885,8 +895,35 @@ input[type="number"]:focus {
 
 .nav-links {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
+}
+
+.nav-link-cta {
+  border: 1px solid rgba(243, 199, 132, 0.45);
+  border-radius: 999px;
+  padding: 6px 16px;
+  background: rgba(243, 199, 132, 0.12);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.nav-link-cta:hover {
+  background: rgba(243, 199, 132, 0.25);
+  border-color: rgba(243, 199, 132, 0.8);
+  color: var(--text);
+}
+
+.arcade-body {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.95fr) minmax(320px, 1.05fr);
+  gap: 32px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .arcade-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .mug-stage {
