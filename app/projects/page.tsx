@@ -41,7 +41,7 @@ export default async function ProjectsPage() {
     <div className="projects-shell">
       <div className="projects-top-bar">
         <div className="projects-nav">
-          <div className="logo-chip logo-chip-ghost">PeopleCore</div>
+          <div className="logo-chip logo-chip-ghost">Coffee Focus</div>
           <h1>Projects</h1>
         </div>
         <nav className="nav-links">

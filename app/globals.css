@@ -51,6 +51,14 @@ body:not(:has(.login-scene)) {
 
 /* Layout */
 
+.app-root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
 .app-shell {
   width: min(calc(100vw - 64px), 1400px);
   max-width: 1400px;
@@ -86,10 +94,122 @@ body:not(:has(.login-scene)) {
 /* Header */
 
 .app-header {
+  width: min(calc(100vw - 64px), 1400px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.app-header-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(243, 199, 132, 0.45);
+  background: rgba(15, 8, 4, 0.9);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.app-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-header-link {
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: rgba(248, 236, 213, 0.8);
+  text-decoration: none;
+  background: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.app-header-link:hover {
+  background: rgba(43, 23, 11, 0.85);
+  border-color: rgba(243, 199, 132, 0.4);
+  color: var(--text);
+}
+
+.app-header-link-active {
+  background: rgba(243, 199, 132, 0.16);
+  border-color: rgba(243, 199, 132, 0.8);
+  color: var(--text);
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 20%, var(--accent), var(--accent-strong));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 0 14px rgba(243, 199, 132, 0.6);
+}
+
+.app-header-user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.app-header-user-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.app-header-user-email {
+  font-size: 0.72rem;
+  color: rgba(248, 236, 213, 0.7);
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    width: calc(100vw - 32px);
+  }
+
+  .app-header-nav {
+    gap: 4px;
+  }
+
+  .app-header-link {
+    padding-inline: 8px;
+  }
+
+  .app-header-user-email {
+    display: none;
+  }
 }
 
 .app-title-group h1 {

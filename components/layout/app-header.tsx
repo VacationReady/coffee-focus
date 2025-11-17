@@ -24,7 +24,7 @@ function getInitials(name?: string | null, email?: string | null) {
   return email ? email[0]?.toUpperCase() ?? "?" : "?";
 }
 
-const HIDDEN_PATHS = new Set<string>(["/", "/projects"]);
+const HIDDEN_PATHS = new Set<string>();
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -42,7 +42,7 @@ export function AppHeader() {
       <div className="app-header-left">
         <Link href="/" className="app-header-logo">
           <span className="logo-dot" />
-          PeopleCore
+          Coffee Focus
         </Link>
         <nav className="app-header-nav">
           {NAV_LINKS.map((link) => (
@@ -50,6 +50,7 @@ export function AppHeader() {
               key={link.href}
               href={link.href}
               className={`app-header-link ${pathname === link.href ? "app-header-link-active" : ""}`}
+              aria-current={pathname === link.href ? "page" : undefined}
             >
               {link.label}
             </Link>

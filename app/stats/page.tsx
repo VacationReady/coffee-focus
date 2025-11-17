@@ -76,7 +76,7 @@ export default async function StatsPage() {
   return (
     <div className="stats-shell">
       <div className="stats-nav">
-        <div className="logo-chip logo-chip-ghost">PeopleCore</div>
+        <div className="logo-chip logo-chip-ghost">Coffee Focus</div>
         <h1>Stats</h1>
         <Link href="/" className="nav-link">
           Back ↩

@@ -29,8 +29,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SessionProvider>
-          <AppHeader />
-          <main className="app-shell">{children}</main>
+          <div className="app-root">
+            <AppHeader />
+            <main className="app-shell">{children}</main>
+          </div>
         </SessionProvider>
       </body>
     </html>

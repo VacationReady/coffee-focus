@@ -35,7 +35,7 @@ export default async function NotesPage() {
   return (
     <div className="notes-shell">
       <div className="notes-nav">
-        <div className="logo-chip logo-chip-ghost">PeopleCore</div>
+        <div className="logo-chip logo-chip-ghost">Coffee Focus</div>
         <h1>Notes</h1>
         <Link href="/" className="nav-link">
           Back ↩

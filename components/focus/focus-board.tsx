@@ -630,7 +630,7 @@ export function FocusBoard({ initialProjects, initialStickyNotes, userName }: Fo
           <div className="arcade-header-left">
             <div className="logo-chip">
               <span className="logo-dot" />
-              PeopleCore
+              Coffee Focus
             </div>
             <div className={`status-pill status-pill-${statusMode.toLowerCase()}`}>{statusMode}</div>
           </div>
