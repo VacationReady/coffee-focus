@@ -1780,7 +1780,7 @@ input[type="number"]:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(24px, 4vw, 60px);
+  padding: clamp(16px, 3vw, 48px);
   background: radial-gradient(circle at 10% 10%, rgba(255, 224, 190, 0.25), transparent 55%),
     radial-gradient(circle at 90% 0%, rgba(132, 175, 255, 0.18), transparent 45%),
     linear-gradient(160deg, #120903, #1c0f05 55%, #2a1406);
@@ -1812,12 +1812,12 @@ input[type="number"]:focus {
 
 .login-frame {
   position: relative;
-  width: min(1100px, 100%);
-  display: grid;
-  grid-template-columns: minmax(320px, 0.95fr) minmax(360px, 1fr);
-  gap: clamp(28px, 3vw, 48px);
-  padding: clamp(28px, 4vw, 48px);
-  border-radius: 36px;
+  width: min(1000px, 100%);
+  display: flex;
+  align-items: stretch;
+  gap: clamp(20px, 3vw, 40px);
+  padding: clamp(24px, 3.5vw, 40px);
+  border-radius: 32px;
   border: 1px solid rgba(250, 210, 170, 0.18);
   background: linear-gradient(145deg, rgba(18, 10, 4, 0.92), rgba(38, 17, 6, 0.94));
   box-shadow: 0 35px 140px rgba(6, 3, 1, 0.85);
@@ -1825,35 +1825,38 @@ input[type="number"]:focus {
 }
 
 .login-showcase {
+  flex: 0 1 340px;
   background: linear-gradient(170deg, rgba(28, 16, 7, 0.95), rgba(11, 6, 3, 0.9));
-  border-radius: 28px;
-  padding: clamp(24px, 3vw, 36px);
+  border-radius: 24px;
+  padding: clamp(18px, 2.5vw, 28px);
   border: 1px solid rgba(255, 215, 186, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  justify-content: space-between;
+  gap: 20px;
   color: #f8e5cf;
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.55);
+  max-height: 100%;
 }
 
 .showcase-window {
   position: relative;
-  padding: 20px 20px 12px;
-  border-radius: 24px;
+  padding: 16px 16px 10px;
+  border-radius: 20px;
   background: linear-gradient(145deg, #0f0602, #241005);
   border: 1px solid rgba(255, 205, 164, 0.12);
-  box-shadow: inset 0 15px 45px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 12px 36px rgba(0, 0, 0, 0.8);
 }
 
 .window-frame {
-  border-radius: 18px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 14px;
   background: linear-gradient(145deg, #1c0d04, #0b0400);
 }
 
 .window-night {
-  height: 180px;
-  border-radius: 16px;
+  height: 140px;
+  border-radius: 14px;
   background: radial-gradient(circle at 50% 0%, rgba(255, 214, 165, 0.15), transparent 80%),
     linear-gradient(180deg, #050208, #140911 70%, #1f1009);
   position: relative;
@@ -1862,10 +1865,10 @@ input[type="number"]:focus {
 
 .window-moon {
   position: absolute;
-  top: 24px;
-  right: 30px;
-  width: 32px;
-  height: 32px;
+  top: 20px;
+  right: 26px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: radial-gradient(circle, #fff7d3, #f1d18b);
   box-shadow: 0 0 25px rgba(255, 233, 178, 0.7);
@@ -1917,32 +1920,32 @@ input[type="number"]:focus {
 
 .window-lamp {
   position: absolute;
-  bottom: -22px;
-  right: 32px;
-  width: 70px;
-  height: 120px;
-  border-radius: 36px;
+  bottom: -18px;
+  right: 26px;
+  width: 58px;
+  height: 98px;
+  border-radius: 28px;
   background: linear-gradient(180deg, #1c0c03, #0c0502);
   border: 1px solid rgba(255, 206, 173, 0.2);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 14px;
-  box-shadow: 0 25px 40px rgba(0, 0, 0, 0.8);
+  padding-bottom: 12px;
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.8);
 }
 
 .lamp-base {
-  width: 32px;
-  height: 8px;
+  width: 26px;
+  height: 6px;
   border-radius: 999px;
   background: linear-gradient(90deg, #a15b3f, #d78c63);
 }
 
 .lamp-light {
   position: absolute;
-  bottom: 18px;
-  width: 24px;
-  height: 60px;
+  bottom: 14px;
+  width: 18px;
+  height: 50px;
   border-radius: 50% 50% 12px 12px;
   background: radial-gradient(circle at 50% 20%, #fff4ce, #f1bf5c);
   box-shadow: 0 0 35px rgba(255, 216, 156, 0.6);
@@ -1960,8 +1963,8 @@ input[type="number"]:focus {
 }
 
 .showcase-copy h2 {
-  font-size: clamp(1.8rem, 2.5vw, 2.4rem);
-  margin-bottom: 8px;
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  margin-bottom: 6px;
 }
 
 .showcase-copy p {
@@ -1978,19 +1981,19 @@ input[type="number"]:focus {
 
 .ritual-card {
   background: rgba(255, 248, 239, 0.08);
-  border-radius: 24px;
-  padding: 20px;
+  border-radius: 20px;
+  padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.25);
 }
 
 .ritual-card ul {
   list-style: none;
   padding: 0;
-  margin: 16px 0 0;
+  margin: 12px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .ritual-card li {
@@ -2011,11 +2014,11 @@ input[type="number"]:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 215, 186, 0.15);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .session-pill p {
@@ -2028,7 +2031,7 @@ input[type="number"]:focus {
 
 .session-pill strong {
   display: block;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #fbe7ce;
 }
 
@@ -2041,6 +2044,7 @@ input[type="number"]:focus {
 }
 
 .login-panel {
+  flex: 1 1 460px;
   display: flex;
   align-items: center;
 }
@@ -2048,16 +2052,16 @@ input[type="number"]:focus {
 .login-card {
   width: 100%;
   background: linear-gradient(170deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-  border-radius: 32px;
+  border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: clamp(28px, 4vw, 44px);
+  padding: clamp(28px, 4vw, 42px);
   color: #fffaef;
   backdrop-filter: blur(18px);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
 }
 
 .login-card-header h1 {
-  font-size: clamp(2rem, 3vw, 2.8rem);
+  font-size: clamp(2rem, 3vw, 2.6rem);
   margin: 8px 0;
 }
 
@@ -2074,10 +2078,10 @@ input[type="number"]:focus {
 }
 
 .login-form {
-  margin-top: 30px;
+  margin-top: 26px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .login-field {
@@ -2111,8 +2115,8 @@ input[type="number"]:focus {
 }
 
 .login-submit {
-  margin-top: 12px;
-  padding: 16px;
+  margin-top: 10px;
+  padding: 15px;
   border-radius: 20px;
   border: none;
   background: linear-gradient(120deg, #ffd9a3, #ffa45b);
@@ -2138,7 +2142,7 @@ input[type="number"]:focus {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 30px 0 12px;
+  margin: 28px 0 12px;
   color: rgba(255, 255, 255, 0.55);
 }
 
@@ -2166,7 +2170,7 @@ input[type="number"]:focus {
 }
 
 .login-hint {
-  margin-top: 18px;
+  margin-top: 16px;
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.65);
   display: flex;
@@ -2183,11 +2187,11 @@ input[type="number"]:focus {
 
 @media (max-width: 1024px) {
   .login-frame {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 
   .login-showcase {
-    order: 2;
+    flex: none;
   }
 }
 
@@ -2198,6 +2202,6 @@ input[type="number"]:focus {
 
   .login-card,
   .login-showcase {
-    border-radius: 20px;
+    border-radius: 18px;
   }
 }

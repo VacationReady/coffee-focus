@@ -47,6 +47,56 @@ export default function LoginPage() {
       <div className="login-background login-background-top" aria-hidden="true" />
       <div className="login-background login-background-bottom" aria-hidden="true" />
       <div className="login-frame">
+        <section className="login-panel">
+          <div className="login-card">
+            <div className="login-card-header">
+              <p className="login-tag">Coffee Focus</p>
+              <h1>Welcome back</h1>
+              <p className="login-subtitle">
+                Your notes, focus blocks, and rituals follow you across every cozy session.
+              </p>
+            </div>
+
+            <form className="login-form" onSubmit={handleSubmit}>
+              <label className="login-field">
+                <span>Email</span>
+                <input name="email" type="email" placeholder="you@example.com" autoComplete="email" />
+              </label>
+
+              <label className="login-field">
+                <span>Password</span>
+                <input
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+              </label>
+
+              {error ? <p className="login-error">{error}</p> : null}
+
+              <button type="submit" className="login-submit" disabled={isSubmitting}>
+                {isSubmitting ? "Lighting the fire..." : "Enter the cabin"}
+              </button>
+            </form>
+
+            <div className="login-divider" aria-hidden="true">
+              <span />
+              <p>or continue with</p>
+              <span />
+            </div>
+
+            <button type="button" className="login-social" onClick={handleGithubSignIn}>
+              Sign in with GitHub
+            </button>
+
+            <div className="login-hint">
+              <p>Seed account</p>
+              <code>michael.dowdle@hotmail.com / Admin123!</code>
+            </div>
+          </div>
+        </section>
+
         <aside className="login-showcase">
           <div className="showcase-window" aria-hidden="true">
             <div className="window-frame">
@@ -66,7 +116,7 @@ export default function LoginPage() {
           </div>
 
           <div className="showcase-copy">
-            <p className="eyebrow">Coffee Focus</p>
+            <p className="eyebrow">Evening station</p>
             <h2>Settle back in.</h2>
             <p>
               Cozy rituals, guided prompts, and warm lighting cues keep your workflow gentle and intentional.
@@ -108,56 +158,6 @@ export default function LoginPage() {
             <span className="session-pill-dot" aria-hidden="true" />
           </div>
         </aside>
-
-        <section className="login-panel">
-          <div className="login-card">
-            <div className="login-card-header">
-              <p className="login-tag">PeopleCore Cabin</p>
-              <h1>Welcome back</h1>
-              <p className="login-subtitle">
-                Log in to sync your focus sessions, sticky notes, and project rituals.
-              </p>
-            </div>
-
-            <form className="login-form" onSubmit={handleSubmit}>
-              <label className="login-field">
-                <span>Email</span>
-                <input name="email" type="email" placeholder="you@example.com" autoComplete="email" />
-              </label>
-
-              <label className="login-field">
-                <span>Password</span>
-                <input
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                />
-              </label>
-
-              {error ? <p className="login-error">{error}</p> : null}
-
-              <button type="submit" className="login-submit" disabled={isSubmitting}>
-                {isSubmitting ? "Lighting the fire..." : "Enter the cabin"}
-              </button>
-            </form>
-
-            <div className="login-divider">
-              <span />
-              <p>or</p>
-              <span />
-            </div>
-
-            <button type="button" className="login-social" onClick={handleGithubSignIn}>
-              Sign in with GitHub
-            </button>
-
-            <div className="login-hint">
-              <p>Seed account</p>
-              <code>michael.dowdle@hotmail.com / Admin123!</code>
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   );
