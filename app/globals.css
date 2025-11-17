@@ -1499,6 +1499,20 @@ input[type="number"]:focus {
   gap: 20px;
 }
 
+.projects-side-panel {
+  border-radius: 24px;
+  border: 1px solid rgba(243, 199, 132, 0.35);
+  background: rgba(15, 8, 4, 0.95);
+  padding: 18px;
+  min-height: 100%;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.45);
+}
+
+.projects-side-placeholder {
+  font-size: 0.9rem;
+  color: rgba(248, 236, 213, 0.75);
+}
+
 .project-card {
   border-radius: 24px;
   border: 1px solid rgba(243, 199, 132, 0.3);
@@ -2179,6 +2193,87 @@ input[type="number"]:focus {
   background: rgba(15, 8, 4, 0.85);
 }
 
+.notes-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.9fr);
+  gap: 20px;
+  align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+  .notes-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.notes-editor {
+  border-radius: 20px;
+  border: 1px solid rgba(243, 199, 132, 0.35);
+  background: rgba(15, 8, 4, 0.9);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notes-editor-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notes-editor-label {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(248, 236, 213, 0.7);
+}
+
+.notes-editor-date {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(248, 236, 213, 0.85);
+}
+
+.notes-editor-textarea {
+  border-radius: 14px;
+  border: 1px solid rgba(243, 199, 132, 0.3);
+  background: rgba(17, 9, 5, 0.85);
+  color: var(--text);
+  padding: 10px 12px;
+  min-height: 180px;
+  resize: vertical;
+}
+
+.notes-editor-textarea:focus {
+  outline: none;
+  border-color: rgba(243, 199, 132, 0.6);
+  box-shadow: 0 0 0 1px rgba(243, 199, 132, 0.4);
+}
+
+.notes-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.notes-editor-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--danger);
+}
+
+.notes-editor-placeholder {
+  font-size: 0.9rem;
+  color: rgba(248, 236, 213, 0.7);
+}
+
 .notes-stat {
   flex: 1;
   display: flex;
@@ -2250,6 +2345,11 @@ input[type="number"]:focus {
 
 .note-card-active {
   background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.note-card-selected {
+  outline: 2px solid rgba(37, 99, 235, 0.9);
+  outline-offset: 2px;
 }
 
 .note-card-header {
