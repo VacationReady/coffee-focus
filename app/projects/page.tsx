@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { NewProjectPanel } from "@/components/projects/new-project-panel";
+import { AddProjectModal } from "@/components/projects/add-project-modal";
 import { ProjectsBoard } from "@/components/projects/projects-board";
 import { getServerAuthSession } from "@/lib/auth";
 import { projectInclude } from "@/lib/project-query";
@@ -60,25 +60,24 @@ export default async function ProjectsPage() {
           <h2>Arcade board</h2>
           <p className="projects-subcopy">{serialized.length === 0 ? "No active missions yet" : `${serialized.length} active missions`}</p>
         </div>
-        <div className="projects-meter">
-          <span>Total logged</span>
-          <strong>{formatSecondsToMinutesLabel(totalSeconds)}</strong>
+        <div className="projects-header-meta">
+          <div className="projects-meter">
+            <span>Total logged</span>
+            <strong>{formatSecondsToMinutesLabel(totalSeconds)}</strong>
+          </div>
+          <AddProjectModal />
         </div>
       </section>
 
-      <div className="projects-content">
-        <NewProjectPanel />
-
-        <section className="projects-canvas">
-          {serialized.length === 0 ? (
-            <div className="projects-empty">
-              <p>Everything starts here. Capture a project in the panel on the left to see it blossom.</p>
-            </div>
-          ) : (
-            <ProjectsBoard projects={serialized} />
-          )}
-        </section>
-      </div>
+      <section className="projects-canvas">
+        {serialized.length === 0 ? (
+          <div className="projects-empty">
+            <p>Everything starts here. Tap “Add Project” to spin up your first mission.</p>
+          </div>
+        ) : (
+          <ProjectsBoard projects={serialized} />
+        )}
+      </section>
     </div>
   );
 }

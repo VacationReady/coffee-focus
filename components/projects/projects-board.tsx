@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
 import type { ProjectDTO } from "@/lib/serializers";
 
 function formatSecondsToMinutesLabel(seconds: number): string {
@@ -40,54 +38,17 @@ type ProjectsBoardProps = {
 };
 
 export function ProjectsBoard({ projects }: ProjectsBoardProps) {
-  const [orderedProjects, setOrderedProjects] = useState(projects);
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    setOrderedProjects(projects);
-  }, [projects]);
-
-  function handleDragStart(index: number) {
-    setDragIndex(index);
-  }
-
-  function handleDrop(index: number) {
-    if (dragIndex === null || dragIndex === index) {
-      setDragIndex(null);
-      return;
-    }
-
-    setOrderedProjects((prev) => {
-      const next = [...prev];
-      const [moved] = next.splice(dragIndex, 1);
-      next.splice(index, 0, moved);
-      return next;
-    });
-    setDragIndex(null);
-  }
-
   return (
     <>
-      <div className="projects-board-hint">
-        <span className="pill-indicator">
-          <span className="pill-indicator-dot" /> Drag cards to prioritize
-        </span>
-      </div>
       <div className="projects-grid">
-        {orderedProjects.map((project, index) => {
+        {projects.map((project) => {
           const projectSeconds = project.tasks.reduce((acc, task) => acc + task.loggedSeconds, 0);
           const progressRatio = project.focusGoalMinutes ? Math.min(projectSeconds / (project.focusGoalMinutes * 60), 1) : null;
-          const isDragging = dragIndex === index;
 
           return (
             <article
               key={project.id}
-              className={`project-card ${isDragging ? "project-card-dragging" : ""}`}
-              draggable
-              onDragStart={() => handleDragStart(index)}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={() => handleDrop(index)}
-              onDragEnd={() => setDragIndex(null)}
+              className="project-card"
             >
               <div className="project-card-header">
                 <div>

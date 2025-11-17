@@ -49,7 +49,11 @@ function splitList(value: string) {
     .filter(Boolean);
 }
 
-export function NewProjectPanel() {
+type NewProjectPanelProps = {
+  onSuccess?: () => void;
+};
+
+export function NewProjectPanel({ onSuccess }: NewProjectPanelProps = {}) {
   const router = useRouter();
   const [form, setForm] = useState<FormFields>(INITIAL_FORM);
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
@@ -123,6 +127,7 @@ export function NewProjectPanel() {
       router.refresh();
       setToastMessage("Project drafted");
       setTimeout(() => setStatus("idle"), 1800);
+      onSuccess?.();
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong");
