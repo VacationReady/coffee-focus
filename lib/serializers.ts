@@ -1,41 +1,167 @@
-import type { Project, ProjectNote, ProjectTask, StickyNote as PrismaStickyNote, FocusSession } from "@prisma/client";
+type FocusSessionStatus = "running" | "completed" | "cancelled";
 
-import type { ProjectRecord } from "@/app/lib/projectUtils";
-import type { StickyNote } from "@/app/lib/noteUtils";
-import type { Session } from "@/app/lib/sessionUtils";
+type ProjectTaskModel = {
+  id: string;
+  projectId: string;
+  title: string;
+  status: "backlog" | "active" | "blocked" | "done";
+  estimateMinutes: number | null;
+  loggedSeconds: number;
+  owner: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
-export function serializeProject(
-  project: Project & { tasks: ProjectTask[]; notes: ProjectNote[] }
-): ProjectRecord {
+type ProjectNoteModel = {
+  id: string;
+  projectId: string;
+  body: string;
+  author: string;
+  createdAt: Date;
+};
+
+type ProjectModel = {
+  id: string;
+  name: string;
+  summary: string;
+  chips: string[];
+  focusGoalMinutes: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  tasks: ProjectTaskModel[];
+  notes: ProjectNoteModel[];
+};
+
+type StickyNoteModel = {
+  id: string;
+  userId: string | null;
+  text: string | null;
+  x: number;
+  y: number;
+  completed: boolean;
+  createdAt: Date;
+  completedAt: Date | null;
+  projectId: string | null;
+};
+
+type FocusSessionModel = {
+  id: string;
+  durationSeconds: number;
+  status: FocusSessionStatus;
+  note: string | null;
+  startedAt: Date;
+  completedAt: Date | null;
+  projectId: string | null;
+  project?: { id: string; name: string } | null;
+  projectTaskId: string | null;
+  task?: { id: string; title: string } | null;
+};
+
+export type ProjectTaskDTO = {
+  id: string;
+  projectId: string;
+  title: string;
+  status: ProjectTaskModel["status"];
+  estimateMinutes?: number;
+  loggedSeconds: number;
+  owner?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ProjectNoteDTO = {
+  id: string;
+  projectId: string;
+  body: string;
+  author: string;
+  createdAt: string;
+};
+
+export type ProjectDTO = {
+  id: string;
+  name: string;
+  summary: string;
+  chips: string[];
+  focusGoalMinutes?: number;
+  createdAt: string;
+  updatedAt: string;
+  tasks: ProjectTaskDTO[];
+  notes: ProjectNoteDTO[];
+};
+
+export type StickyNoteDTO = {
+  id: string;
+  userId?: string;
+  text: string;
+  x: number;
+  y: number;
+  completed: boolean;
+  createdAt: string;
+  completedAt?: string;
+  projectId?: string;
+};
+
+export type FocusSessionDTO = {
+  id: string;
+  durationSeconds: number;
+  status: FocusSessionStatus;
+  note?: string;
+  startedAt: string;
+  completedAt?: string;
+  projectId?: string;
+  projectName?: string;
+  projectTaskId?: string;
+  projectTaskTitle?: string;
+};
+
+export function serializeProjectTask(task: ProjectTaskModel): ProjectTaskDTO {
+  return {
+    id: task.id,
+    projectId: task.projectId,
+    title: task.title,
+    status: task.status,
+    estimateMinutes: task.estimateMinutes ?? undefined,
+    loggedSeconds: task.loggedSeconds,
+    owner: task.owner ?? undefined,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+  };
+}
+
+export function serializeProjectNote(note: ProjectNoteModel): ProjectNoteDTO {
+  return {
+    id: note.id,
+    projectId: note.projectId,
+    body: note.body,
+    author: note.author,
+    createdAt: note.createdAt.toISOString(),
+  };
+}
+
+export function serializeProject(project: ProjectModel): ProjectDTO {
   return {
     id: project.id,
     name: project.name,
     summary: project.summary,
     chips: project.chips,
     focusGoalMinutes: project.focusGoalMinutes ?? undefined,
+    createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
-    tasks: project.tasks.map((task) => ({
-      id: task.id,
-      title: task.title,
-      status: task.status as ProjectRecord["tasks"][number]["status"],
-      estimateMinutes: task.estimateMinutes ?? undefined,
-      loggedSeconds: task.loggedSeconds,
-      owner: task.owner ?? undefined,
-      createdAt: task.createdAt.toISOString(),
-      updatedAt: task.updatedAt.toISOString(),
-    })),
-    notes: project.notes.map((note) => ({
-      id: note.id,
-      body: note.body,
-      author: note.author,
-      createdAt: note.createdAt.toISOString(),
-    })),
+    tasks: project.tasks
+      .slice()
+      .sort((a: ProjectTaskModel, b: ProjectTaskModel) => a.createdAt.getTime() - b.createdAt.getTime())
+      .map(serializeProjectTask),
+    notes: project.notes
+      .slice()
+      .sort((a: ProjectNoteModel, b: ProjectNoteModel) => b.createdAt.getTime() - a.createdAt.getTime())
+      .map(serializeProjectNote),
   };
 }
 
-export function serializeStickyNote(note: PrismaStickyNote): StickyNote {
+export function serializeStickyNote(note: StickyNoteModel): StickyNoteDTO {
   return {
     id: note.id,
+    userId: note.userId ?? undefined,
     text: note.text ?? "",
     x: note.x,
     y: note.y,
@@ -46,9 +172,17 @@ export function serializeStickyNote(note: PrismaStickyNote): StickyNote {
   };
 }
 
-export function serializeFocusSession(session: FocusSession): Session {
+export function serializeFocusSession(session: FocusSessionModel): FocusSessionDTO {
   return {
-    seconds: session.durationSeconds,
-    date: session.startedAt.toISOString(),
+    id: session.id,
+    durationSeconds: session.durationSeconds,
+    status: session.status,
+    note: session.note ?? undefined,
+    startedAt: session.startedAt.toISOString(),
+    completedAt: session.completedAt?.toISOString(),
+    projectId: session.projectId ?? undefined,
+    projectName: session.project?.name ?? undefined,
+    projectTaskId: session.projectTaskId ?? undefined,
+    projectTaskTitle: session.task?.title ?? undefined,
   };
 }
