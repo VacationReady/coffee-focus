@@ -77,21 +77,39 @@ export default function LoginPage() {
             <p className="ritual-title">Tonight&apos;s ritual</p>
             <ul>
               <li>
-                <span>☕</span>
+                <span className="ritual-icon ritual-icon-mug" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" role="presentation" focusable="false">
+                    <rect x="10" y="14" width="20" height="20" rx="6" ry="6" />
+                    <path d="M30 18h6a4 4 0 0 1 0 8h-6" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M18 10c0 2-2 3-2 5s2 3 2 5" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </span>
                 <div>
                   <strong>Brew intention</strong>
                   <small>Savor a pour-over while writing what matters.</small>
                 </div>
               </li>
               <li>
-                <span>🗂️</span>
+                <span className="ritual-icon ritual-icon-notes" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" role="presentation" focusable="false">
+                    <rect x="12" y="10" width="24" height="32" rx="6" ry="6" />
+                    <line x1="18" y1="20" x2="30" y2="20" strokeWidth="3" strokeLinecap="round" />
+                    <line x1="18" y1="28" x2="30" y2="28" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="24" cy="14" r="2" />
+                  </svg>
+                </span>
                 <div>
                   <strong>Capture notes</strong>
                   <small>Park stray thoughts in your project notebook.</small>
                 </div>
               </li>
               <li>
-                <span>🔥</span>
+                <span className="ritual-icon ritual-icon-flame" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" role="presentation" focusable="false">
+                    <path d="M24 6c3 8-2 11-2 14s2 4 2 7-2 5-2 7c0 4 3 6 6 6 5 0 8-4 8-9 0-6-4-10-7-13-3-4-3-8-5-12z" />
+                    <path d="M20 30c0 4 2 6 5 6 3 0 5-2 5-5 0-4-4-6-5-9-1 3-5 4-5 8z" />
+                  </svg>
+                </span>
                 <div>
                   <strong>Log focus blocks</strong>
                   <small>Protect two deep work windows tonight.</small>
