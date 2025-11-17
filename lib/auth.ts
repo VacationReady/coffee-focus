@@ -8,21 +8,31 @@ import GithubProvider from "next-auth/providers/github";
 
 import { prisma } from "./prisma";
 
+let cachedSecret: string | null = null;
+
 function resolveAuthSecret() {
+  if (cachedSecret) {
+    return cachedSecret;
+  }
+
   const directSecret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
   if (directSecret) {
-    return directSecret;
+    cachedSecret = directSecret;
+    return cachedSecret;
   }
 
   if (process.env.DATABASE_URL) {
-    return createHash("sha256").update(process.env.DATABASE_URL).digest("hex");
+    cachedSecret = createHash("sha256").update(process.env.DATABASE_URL).digest("hex");
+    return cachedSecret;
   }
 
-  if (process.env.NODE_ENV !== "production") {
-    return randomBytes(32).toString("hex");
+  cachedSecret = randomBytes(32).toString("hex");
+  if (process.env.NODE_ENV === "production") {
+    console.warn(
+      "NEXTAUTH_SECRET (or AUTH_SECRET) is not set. Generated an ephemeral secret; sessions will reset on each deploy."
+    );
   }
-
-  throw new Error("NEXTAUTH_SECRET (or AUTH_SECRET) must be set");
+  return cachedSecret;
 }
 
 const credentialProvider = CredentialsProvider({
