@@ -1777,10 +1777,11 @@ input[type="number"]:focus {
 
 .login-scene {
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(20px, 4vw, 56px);
+  padding: 0;
   background: radial-gradient(circle at 10% 10%, rgba(255, 224, 190, 0.25), transparent 55%),
     radial-gradient(circle at 90% 0%, rgba(132, 175, 255, 0.18), transparent 45%),
     linear-gradient(160deg, #120903, #1c0f05 55%, #2a1406);
@@ -1797,54 +1798,114 @@ input[type="number"]:focus {
   filter: blur(120px);
   opacity: 0.7;
   transform: scale(1.2);
+  animation: floatBackground 20s ease-in-out infinite alternate;
+}
+
+@keyframes floatBackground {
+  0% {
+    transform: scale(1.2) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.3) translate(20px, 20px);
+  }
 }
 
 .login-background-top {
   top: -30%;
   left: -20%;
+  animation-delay: 0s;
 }
 
 .login-background-bottom {
   bottom: -35%;
   right: -25%;
   background: radial-gradient(circle, rgba(255, 119, 91, 0.2), transparent 70%);
+  animation-delay: 10s;
 }
 
 .login-frame {
   position: relative;
-  width: min(880px, 100%);
-  margin: 0 auto;
-  display: flex;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: stretch;
-  gap: clamp(16px, 2.4vw, 32px);
-  padding: clamp(20px, 3vw, 32px);
-  border-radius: 30px;
-  border: 1px solid rgba(250, 210, 170, 0.18);
-  background: linear-gradient(145deg, rgba(18, 10, 4, 0.92), rgba(38, 17, 6, 0.94));
-  box-shadow: 0 30px 120px rgba(6, 3, 1, 0.8);
+  gap: 0;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
   z-index: 1;
 }
 
 .login-showcase {
-  flex: 0 1 300px;
-  background: linear-gradient(170deg, rgba(28, 16, 7, 0.95), rgba(11, 6, 3, 0.9));
-  border-radius: 22px;
-  padding: clamp(18px, 2vw, 26px);
-  border: 1px solid rgba(255, 215, 186, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  justify-content: center;
+  gap: clamp(20px, 3vh, 32px);
+  padding: clamp(40px, 6vw, 80px);
+  background: linear-gradient(170deg, rgba(28, 16, 7, 0.98), rgba(11, 6, 3, 0.95));
+  border-right: 1px solid rgba(255, 215, 186, 0.15);
   color: #f8e5cf;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+  animation: slideInLeft 0.8s ease-out;
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.login-showcase::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 187, 120, 0.12), transparent 60%);
+  pointer-events: none;
+  animation: pulseGlow 8s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGlow {
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .showcase-window {
   position: relative;
-  padding: 16px 16px 10px;
-  border-radius: 20px;
+  padding: 20px 20px 14px;
+  border-radius: 24px;
   background: linear-gradient(145deg, #0f0602, #241005);
-  border: 1px solid rgba(255, 205, 164, 0.12);
-  box-shadow: inset 0 12px 36px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 205, 164, 0.2);
+  box-shadow: inset 0 12px 36px rgba(0, 0, 0, 0.8), 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .window-frame {
@@ -1854,8 +1915,8 @@ input[type="number"]:focus {
 }
 
 .window-night {
-  height: 140px;
-  border-radius: 14px;
+  height: 160px;
+  border-radius: 16px;
   background: radial-gradient(circle at 50% 0%, rgba(255, 214, 165, 0.15), transparent 80%),
     linear-gradient(180deg, #050208, #140911 70%, #1f1009);
   position: relative;
@@ -1866,19 +1927,30 @@ input[type="number"]:focus {
   position: absolute;
   top: 20px;
   right: 26px;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: radial-gradient(circle, #fff7d3, #f1d18b);
-  box-shadow: 0 0 25px rgba(255, 233, 178, 0.7);
+  box-shadow: 0 0 35px rgba(255, 233, 178, 0.9), 0 0 60px rgba(255, 233, 178, 0.5);
+  animation: moonGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes moonGlow {
+  0% {
+    box-shadow: 0 0 35px rgba(255, 233, 178, 0.9), 0 0 60px rgba(255, 233, 178, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 45px rgba(255, 233, 178, 1), 0 0 80px rgba(255, 233, 178, 0.7);
+  }
 }
 
 .window-star {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
   animation: starPulse 4s ease-in-out infinite alternate;
 }
 
@@ -1947,7 +2019,19 @@ input[type="number"]:focus {
   height: 50px;
   border-radius: 50% 50% 12px 12px;
   background: radial-gradient(circle at 50% 20%, #fff4ce, #f1bf5c);
-  box-shadow: 0 0 35px rgba(255, 216, 156, 0.6);
+  box-shadow: 0 0 35px rgba(255, 216, 156, 0.8), 0 0 60px rgba(255, 216, 156, 0.4);
+  animation: lampFlicker 3s ease-in-out infinite;
+}
+
+@keyframes lampFlicker {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 35px rgba(255, 216, 156, 0.8), 0 0 60px rgba(255, 216, 156, 0.4);
+  }
+  50% {
+    opacity: 0.95;
+    box-shadow: 0 0 40px rgba(255, 216, 156, 0.9), 0 0 70px rgba(255, 216, 156, 0.5);
+  }
 }
 
 @keyframes starPulse {
@@ -1961,6 +2045,12 @@ input[type="number"]:focus {
   }
 }
 
+.showcase-copy {
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 1s ease-out 0.5s both;
+}
+
 .showcase-copy h2 {
   font-size: clamp(1.5rem, 2vw, 2rem);
   margin-bottom: 6px;
@@ -1969,6 +2059,7 @@ input[type="number"]:focus {
 .showcase-copy p {
   color: rgba(248, 229, 207, 0.75);
   margin: 0;
+  line-height: 1.6;
 }
 
 .eyebrow {
@@ -1981,9 +2072,12 @@ input[type="number"]:focus {
 .ritual-card {
   background: rgba(255, 248, 239, 0.08);
   border-radius: 20px;
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.25);
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 1s ease-out 0.6s both;
 }
 
 .ritual-card ul {
@@ -2018,6 +2112,9 @@ input[type="number"]:focus {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 215, 186, 0.15);
   font-size: 0.85rem;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 1s ease-out 0.9s both;
 }
 
 .session-pill p {
@@ -2040,24 +2137,78 @@ input[type="number"]:focus {
   border-radius: 50%;
   background: #f9a74b;
   box-shadow: 0 0 12px rgba(249, 167, 75, 0.8);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(249, 167, 75, 0.8);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 0 18px rgba(249, 167, 75, 1);
+  }
 }
 
 
 .login-panel {
-  flex: 1 1 0;
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: clamp(40px, 6vw, 80px);
+  background: linear-gradient(145deg, rgba(18, 10, 4, 0.95), rgba(38, 17, 6, 0.92));
+  position: relative;
+  overflow: hidden;
+  animation: slideInRight 0.8s ease-out;
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.login-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(255, 187, 120, 0.1), transparent 50%);
+  pointer-events: none;
 }
 
 .login-card {
   width: 100%;
-  background: linear-gradient(170deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-  border-radius: 26px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: clamp(28px, 4vw, 40px);
+  max-width: 480px;
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: clamp(32px, 5vw, 48px);
   color: #fffaef;
-  backdrop-filter: blur(18px);
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  position: relative;
+  z-index: 1;
+  animation: fadeInScale 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .login-card-header h1 {
@@ -2116,7 +2267,7 @@ input[type="number"]:focus {
 
 .login-submit {
   margin-top: 10px;
-  padding: 15px;
+  padding: 16px;
   border-radius: 20px;
   border: none;
   background: linear-gradient(120deg, #ffd9a3, #ffa45b);
@@ -2125,8 +2276,25 @@ input[type="number"]:focus {
   font-weight: 600;
   letter-spacing: 0.05em;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 20px 45px rgba(255, 164, 91, 0.45);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-submit::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.login-submit:not(:disabled):hover::before {
+  left: 100%;
 }
 
 .login-submit:disabled {
@@ -2135,7 +2303,8 @@ input[type="number"]:focus {
 }
 
 .login-submit:not(:disabled):hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 25px 55px rgba(255, 164, 91, 0.6);
 }
 
 .login-divider {
@@ -2187,32 +2356,69 @@ input[type="number"]:focus {
 
 @media (max-width: 1024px) {
   .login-frame {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
   }
 
   .login-showcase {
-    flex: none;
+    padding: clamp(30px, 5vw, 50px);
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 215, 186, 0.15);
+  }
+
+  .showcase-window {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .ritual-card,
+  .session-pill {
+    max-width: 500px;
+    margin: 0 auto;
   }
 }
 
-@media (max-width: 1200px) {
-  .login-frame {
-    width: min(520px, 100%);
-    padding: clamp(20px, 5vw, 32px);
+@media (max-width: 768px) {
+  .login-panel {
+    padding: clamp(30px, 5vw, 50px);
   }
 
-  .login-showcase {
-    display: none;
+  .login-card {
+    padding: clamp(24px, 4vw, 32px);
+  }
+
+  .window-night {
+    height: 120px;
+  }
+
+  .ritual-card ul {
+    gap: 10px;
   }
 }
 
 @media (max-width: 640px) {
-  .login-frame {
-    padding: 20px;
+  .login-showcase {
+    padding: 24px;
   }
 
-  .login-card,
-  .login-showcase {
-    border-radius: 18px;
+  .login-panel {
+    padding: 24px;
+  }
+
+  .login-card {
+    padding: 24px;
+    border-radius: 20px;
+  }
+
+  .showcase-window {
+    padding: 14px;
+  }
+
+  .window-night {
+    height: 100px;
+  }
+
+  .ritual-card {
+    padding: 14px;
   }
 }
