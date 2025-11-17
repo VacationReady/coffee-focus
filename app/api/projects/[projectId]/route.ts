@@ -11,6 +11,21 @@ import {
 import { projectInclude } from "@/lib/project-query";
 import { serializeProject } from "@/lib/serializers";
 
+const sanitizeNullableString = (value: unknown) => {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
+};
+
+const parseDateValue = (value: unknown) => {
+  if (typeof value !== "string") return undefined;
+  if (value.trim().length === 0) {
+    return null;
+  }
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? undefined : new Date(timestamp);
+};
+
 async function fetchProjectOrThrow(projectId: string, userId: string) {
   const project = await prisma.project.findFirst({
     where: { id: projectId, userId },
@@ -45,6 +60,14 @@ type UpdateProjectPayload = {
   summary?: string;
   chips?: string[];
   focusGoalMinutes?: number | null;
+  objective?: string | null;
+  owner?: string | null;
+  priority?: string | null;
+  startDate?: string | null;
+  targetLaunchDate?: string | null;
+  successCriteria?: string | null;
+  budget?: string | null;
+  stakeholders?: string[];
 };
 
 export const PATCH = async (request: NextRequest, context: RouteContext) => {
@@ -69,6 +92,39 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
       data.focusGoalMinutes = null;
     } else if (typeof body.focusGoalMinutes === "number" && Number.isFinite(body.focusGoalMinutes)) {
       data.focusGoalMinutes = Math.max(1, Math.round(body.focusGoalMinutes));
+    }
+
+    if (body.objective !== undefined) {
+      data.objective = sanitizeNullableString(body.objective);
+    }
+    if (body.owner !== undefined) {
+      data.ownerName = sanitizeNullableString(body.owner);
+    }
+    if (body.priority !== undefined) {
+      data.priority = sanitizeNullableString(body.priority);
+    }
+    if (body.successCriteria !== undefined) {
+      data.successCriteria = sanitizeNullableString(body.successCriteria);
+    }
+    if (body.budget !== undefined) {
+      data.budget = sanitizeNullableString(body.budget);
+    }
+    if (body.startDate !== undefined) {
+      const parsed = parseDateValue(body.startDate);
+      if (parsed !== undefined) {
+        data.startDate = parsed;
+      }
+    }
+    if (body.targetLaunchDate !== undefined) {
+      const parsed = parseDateValue(body.targetLaunchDate);
+      if (parsed !== undefined) {
+        data.targetLaunchDate = parsed;
+      }
+    }
+    if (Array.isArray(body.stakeholders)) {
+      data.stakeholders = body.stakeholders.filter(
+        (name): name is string => typeof name === "string" && name.trim().length > 0
+      );
     }
 
     if (Object.keys(data).length === 0) {

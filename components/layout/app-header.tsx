@@ -24,7 +24,7 @@ function getInitials(name?: string | null, email?: string | null) {
   return email ? email[0]?.toUpperCase() ?? "?" : "?";
 }
 
-const HIDDEN_PATHS = new Set<string>(["/"]);
+const HIDDEN_PATHS = new Set<string>(["/", "/projects"]);
 
 export function AppHeader() {
   const pathname = usePathname();

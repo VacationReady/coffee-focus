@@ -26,6 +26,14 @@ type ProjectModel = {
   summary: string;
   chips: string[];
   focusGoalMinutes: number | null;
+  objective: string | null;
+  ownerName: string | null;
+  priority: string | null;
+  startDate: Date | null;
+  targetLaunchDate: Date | null;
+  successCriteria: string | null;
+  budget: string | null;
+  stakeholders: string[];
   createdAt: Date;
   updatedAt: Date;
   tasks: ProjectTaskModel[];
@@ -83,6 +91,14 @@ export type ProjectDTO = {
   summary: string;
   chips: string[];
   focusGoalMinutes?: number;
+  objective?: string;
+  owner?: string;
+  priority?: string;
+  startDate?: string;
+  targetLaunchDate?: string;
+  successCriteria?: string;
+  budget?: string;
+  stakeholders: string[];
   createdAt: string;
   updatedAt: string;
   tasks: ProjectTaskDTO[];
@@ -145,6 +161,14 @@ export function serializeProject(project: ProjectModel): ProjectDTO {
     summary: project.summary,
     chips: project.chips,
     focusGoalMinutes: project.focusGoalMinutes ?? undefined,
+    objective: project.objective ?? undefined,
+    owner: project.ownerName ?? undefined,
+    priority: project.priority ?? undefined,
+    startDate: project.startDate?.toISOString(),
+    targetLaunchDate: project.targetLaunchDate?.toISOString(),
+    successCriteria: project.successCriteria ?? undefined,
+    budget: project.budget ?? undefined,
+    stakeholders: project.stakeholders ?? [],
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
     tasks: project.tasks

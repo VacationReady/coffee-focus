@@ -78,6 +78,14 @@ model Project {
   summary          String
   chips            String[]      @default([])
   focusGoalMinutes Int?
+  objective        String?       @db.Text
+  ownerName        String?
+  priority         String?
+  startDate        DateTime?
+  targetLaunchDate DateTime?
+  successCriteria  String?       @db.Text
+  budget           String?
+  stakeholders     String[]      @default([])
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 

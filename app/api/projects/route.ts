@@ -27,6 +27,26 @@ type CreateProjectPayload = {
   summary?: string;
   chips?: string[];
   focusGoalMinutes?: number | null;
+  objective?: string;
+  owner?: string;
+  priority?: string;
+  startDate?: string;
+  targetLaunchDate?: string;
+  successCriteria?: string;
+  budget?: string;
+  stakeholders?: string[];
+};
+
+const sanitizeNullableString = (value: unknown) => {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
+};
+
+const parseDateValue = (value: unknown) => {
+  if (typeof value !== "string") return null;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? null : new Date(timestamp);
 };
 
 export const POST = withRouteErrorHandling(async (request: Request) => {
@@ -41,6 +61,10 @@ export const POST = withRouteErrorHandling(async (request: Request) => {
     ? body.chips.filter((chip): chip is string => typeof chip === "string")
     : [];
 
+  const stakeholders = Array.isArray(body.stakeholders)
+    ? body.stakeholders.filter((name): name is string => typeof name === "string" && name.trim().length > 0)
+    : [];
+
   const focusGoalMinutes =
     typeof body.focusGoalMinutes === "number" && Number.isFinite(body.focusGoalMinutes)
       ? Math.max(1, Math.round(body.focusGoalMinutes))
@@ -52,6 +76,14 @@ export const POST = withRouteErrorHandling(async (request: Request) => {
       summary: body.summary.trim(),
       chips,
       focusGoalMinutes,
+      objective: sanitizeNullableString(body.objective),
+      ownerName: sanitizeNullableString(body.owner),
+      priority: sanitizeNullableString(body.priority),
+      startDate: parseDateValue(body.startDate),
+      targetLaunchDate: parseDateValue(body.targetLaunchDate),
+      successCriteria: sanitizeNullableString(body.successCriteria),
+      budget: sanitizeNullableString(body.budget),
+      stakeholders,
       userId,
     },
     include: projectInclude,
