@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import {
@@ -22,13 +22,18 @@ async function fetchProjectOrThrow(projectId: string, userId: string) {
   return project;
 }
 
-export const GET = async (
-  _request: Request,
-  { params }: { params: { projectId: string } }
-) => {
+type RouteContext = { params: Promise<{ projectId: string }> };
+
+async function resolveProjectId(context: RouteContext) {
+  const { projectId } = await context.params;
+  return projectId;
+}
+
+export const GET = async (_request: NextRequest, context: RouteContext) => {
   try {
     const { userId } = await requireUser();
-    const project = await fetchProjectOrThrow(params.projectId, userId);
+    const projectId = await resolveProjectId(context);
+    const project = await fetchProjectOrThrow(projectId, userId);
     return NextResponse.json({ project: serializeProject(project) });
   } catch (error) {
     return handleApiError(error);
@@ -42,14 +47,12 @@ type UpdateProjectPayload = {
   focusGoalMinutes?: number | null;
 };
 
-export const PATCH = async (
-  request: Request,
-  { params }: { params: { projectId: string } }
-) => {
+export const PATCH = async (request: NextRequest, context: RouteContext) => {
   try {
     const { userId } = await requireUser();
     const body = await parseJson<UpdateProjectPayload>(request);
-    const project = await fetchProjectOrThrow(params.projectId, userId);
+    const projectId = await resolveProjectId(context);
+    const project = await fetchProjectOrThrow(projectId, userId);
 
     const data: Record<string, unknown> = {};
 
@@ -84,14 +87,12 @@ export const PATCH = async (
   }
 };
 
-export const DELETE = async (
-  _request: Request,
-  { params }: { params: { projectId: string } }
-) => {
+export const DELETE = async (_request: NextRequest, context: RouteContext) => {
   try {
     const { userId } = await requireUser();
-    await fetchProjectOrThrow(params.projectId, userId);
-    await prisma.project.delete({ where: { id: params.projectId } });
+    const projectId = await resolveProjectId(context);
+    await fetchProjectOrThrow(projectId, userId);
+    await prisma.project.delete({ where: { id: projectId } });
     return NextResponse.json({ ok: true });
   } catch (error) {
     return handleApiError(error);
