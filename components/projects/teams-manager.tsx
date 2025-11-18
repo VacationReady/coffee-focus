@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
 type TeamOption = {
@@ -88,7 +88,7 @@ export function TeamsManager() {
         <ul className="teams-list">
           {teams.map((team) => (
             <li key={team.id} className="teams-list-item">
-              {team.name}
+              <Link href={`/teams/${team.id}`}>{team.name}</Link>
             </li>
           ))}
         </ul>
