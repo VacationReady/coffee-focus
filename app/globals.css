@@ -2320,6 +2320,20 @@ input[type="number"]:focus {
   gap: 16px;
 }
 
+.notes-section-drop-ready {
+  border-radius: 18px;
+  padding: 10px 10px 14px;
+  background: radial-gradient(circle at 0 0, rgba(243, 199, 132, 0.12), transparent 55%),
+    rgba(15, 8, 4, 0.9);
+  box-shadow: 0 0 0 1px rgba(243, 199, 132, 0.4);
+}
+
+.notes-section-drop-pending {
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.5),
+    0 16px 40px rgba(0, 0, 0, 0.9);
+}
+
 .notes-section-title {
   margin: 0;
   font-size: 1.2rem;
@@ -2342,6 +2356,91 @@ input[type="number"]:focus {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
+}
+
+.notes-complete-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.6);
+  background: radial-gradient(circle at 0 0, rgba(34, 197, 94, 0.2), transparent 55%),
+    rgba(15, 8, 4, 0.95);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+  animation: notesCompletePop 0.18s ease-out;
+}
+
+.notes-complete-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notes-complete-kicker {
+  margin: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(187, 247, 208, 0.9);
+}
+
+.notes-complete-body {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(248, 236, 213, 0.9);
+}
+
+.notes-complete-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notes-complete-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(243, 199, 132, 0.5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.notes-complete-btn-yes {
+  background: linear-gradient(145deg, #bbf7d0, #22c55e);
+  color: #052e16;
+  box-shadow: 0 10px 28px rgba(22, 163, 74, 0.7);
+}
+
+.notes-complete-btn-no {
+  background: rgba(127, 29, 29, 0.4);
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.6);
+}
+
+.notes-complete-btn:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.8);
+}
+
+.notes-complete-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes notesCompletePop {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .note-card {

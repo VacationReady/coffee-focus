@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import type { StickyNoteDTO } from "@/lib/serializers";
@@ -48,6 +49,8 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
   const [error, setError] = useState<string | null>(null);
   const [projectDraft, setProjectDraft] = useState<string>(() => initialNotes[0]?.projectId ?? "");
   const [projectOptions, setProjectOptions] = useState<ProjectOption[]>([]);
+  const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null);
+  const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null);
 
   const activeNotes = useMemo(() => notes.filter((note) => !note.completed), [notes]);
   const completedNotes = useMemo(() => notes.filter((note) => note.completed), [notes]);
@@ -55,6 +58,11 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
   const selectedNote = useMemo(
     () => (selectedNoteId ? notes.find((note) => note.id === selectedNoteId) ?? null : null),
     [notes, selectedNoteId]
+  );
+
+  const pendingNote = useMemo(
+    () => (pendingCompleteId ? notes.find((note) => note.id === pendingCompleteId) ?? null : null),
+    [notes, pendingCompleteId]
   );
 
   useEffect(() => {
@@ -96,6 +104,29 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
     setSelectedNoteId(noteId);
   }
 
+  function handleDragStart(event: React.DragEvent<HTMLButtonElement>, noteId: string) {
+    event.dataTransfer.effectAllowed = "move";
+    setDraggingNoteId(noteId);
+  }
+
+  function handleDragEnd() {
+    setDraggingNoteId(null);
+  }
+
+  function handleCompletedDragOver(event: React.DragEvent<HTMLElement>) {
+    if (!draggingNoteId) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }
+
+  function handleCompletedDrop(event: React.DragEvent<HTMLElement>) {
+    event.preventDefault();
+    if (!draggingNoteId) return;
+    setPendingCompleteId(draggingNoteId);
+    setSelectedNoteId(draggingNoteId);
+    setDraggingNoteId(null);
+  }
+
   async function handleSave() {
     if (!selectedNote) return;
 
@@ -126,7 +157,7 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
 
       const payload = (await response.json()) as { note: StickyNoteDTO };
       setNotes((prev) =>
-        prev.map((note) => (note.id === payload.note.id ? payload.note : note))
+        prev.map((current) => (current.id === payload.note.id ? payload.note : current))
       );
     } catch (err) {
       setNotes(previousNotes);
@@ -136,25 +167,28 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
     }
   }
 
-  async function handleComplete() {
-    if (!selectedNote || selectedNote.completed) return;
+  async function handleComplete(noteId: string) {
+    const note = notes.find((n) => n.id === noteId);
+    if (!note || note.completed) return;
 
-    const nextText = draftText ?? "";
-    const nextProjectId = projectDraft || null;
-    const noteId = selectedNote.id;
+    setPendingCompleteId((current) => (current === noteId ? null : current));
+
+    const useDraft = selectedNoteId === noteId;
+    const nextText = useDraft ? draftText ?? "" : note.text ?? "";
+    const nextProjectId = useDraft ? projectDraft || null : note.projectId ?? null;
     const previousNotes = notes;
 
     setNotes((prev) =>
-      prev.map((note) =>
-        note.id === noteId
+      prev.map((current) =>
+        current.id === noteId
           ? {
-              ...note,
+              ...current,
               text: nextText,
               projectId: nextProjectId ?? undefined,
               completed: true,
               completedAt: new Date().toISOString(),
             }
-          : note
+          : current
       )
     );
     setIsSaving(true);
@@ -219,6 +253,9 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
                         selectedNoteId === note.id ? " note-card-selected" : ""
                       }`}
                       onClick={() => handleSelect(note.id)}
+                      draggable
+                      onDragStart={(event) => handleDragStart(event, note.id)}
+                      onDragEnd={handleDragEnd}
                     >
                       <div className="note-card-header">
                         <span className="note-card-date">{formatDate(note.createdAt)}</span>
@@ -233,8 +270,44 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
               )}
             </section>
 
-            <section className="notes-section">
+            <section
+              className={`notes-section${
+                draggingNoteId ? " notes-section-drop-ready" : ""
+              }${pendingNote ? " notes-section-drop-pending" : ""}`}
+              onDragOver={handleCompletedDragOver}
+              onDrop={handleCompletedDrop}
+            >
               <h2 className="notes-section-title">Completed Notes</h2>
+              {pendingNote ? (
+                <div className="notes-complete-banner">
+                  <div className="notes-complete-text">
+                    <p className="notes-complete-kicker">Move to completed?</p>
+                    <p className="notes-complete-body">
+                      {pendingNote.text || "(Empty note)"}
+                    </p>
+                  </div>
+                  <div className="notes-complete-actions">
+                    <button
+                      type="button"
+                      className="notes-complete-btn notes-complete-btn-yes"
+                      onClick={() => {
+                        void handleComplete(pendingNote.id);
+                      }}
+                      disabled={isSaving}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      type="button"
+                      className="notes-complete-btn notes-complete-btn-no"
+                      onClick={() => setPendingCompleteId(null)}
+                      disabled={isSaving}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ) : null}
               {completedNotes.length === 0 ? (
                 <p className="notes-empty">
                   No completed notes yet. Complete a note to see it here.
@@ -312,7 +385,7 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={handleComplete}
+                      onClick={() => handleComplete(selectedNote.id)}
                       disabled={isSaving}
                     >
                       Mark complete
