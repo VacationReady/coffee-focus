@@ -2160,7 +2160,9 @@ input[type="number"]:focus {
 /* === Notes Page === */
 
 .notes-shell {
-  width: min(1200px, 100%);
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
