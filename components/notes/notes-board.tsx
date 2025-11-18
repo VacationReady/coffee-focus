@@ -4,11 +4,30 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { StickyNoteDTO } from "@/lib/serializers";
 
+type ProjectOption = {
+  id: string;
+  name: string;
+};
+
 type NotesBoardProps = {
   initialNotes: StickyNoteDTO[];
 };
 
 const STICKY_NOTES_BASE = "/api/sticky-notes";
+const PROJECTS_BASE = "/api/projects";
+
+type ProjectsResponse = {
+  projects: { id: string; name: string }[];
+};
+
+async function fetchProjects(): Promise<ProjectOption[]> {
+  const response = await fetch(PROJECTS_BASE);
+  if (!response.ok) {
+    throw new Error("Failed to load projects");
+  }
+  const data = (await response.json()) as ProjectsResponse;
+  return data.projects.map((project) => ({ id: project.id, name: project.name }));
+}
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -27,6 +46,8 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
   const [draftText, setDraftText] = useState<string>(() => initialNotes[0]?.text ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [projectDraft, setProjectDraft] = useState<string>(() => initialNotes[0]?.projectId ?? "");
+  const [projectOptions, setProjectOptions] = useState<ProjectOption[]>([]);
 
   const activeNotes = useMemo(() => notes.filter((note) => !note.completed), [notes]);
   const completedNotes = useMemo(() => notes.filter((note) => note.completed), [notes]);
@@ -39,10 +60,37 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
   useEffect(() => {
     if (!selectedNote) {
       setDraftText("");
+      setProjectDraft("");
       return;
     }
     setDraftText(selectedNote.text ?? "");
+    setProjectDraft(selectedNote.projectId ?? "");
   }, [selectedNote]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadProjects() {
+      try {
+        const projects = await fetchProjects();
+        if (!isCancelled) {
+          setProjectOptions(projects);
+        }
+      } catch {
+        if (!isCancelled) {
+          setProjectOptions([]);
+        }
+      }
+    }
+
+    loadProjects().catch(() => {
+      // handled above
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   function handleSelect(noteId: string) {
     setSelectedNoteId(noteId);
@@ -52,11 +100,14 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
     if (!selectedNote) return;
 
     const nextText = draftText ?? "";
+    const nextProjectId = projectDraft || null;
     const noteId = selectedNote.id;
     const previousNotes = notes;
 
     setNotes((prev) =>
-      prev.map((note) => (note.id === noteId ? { ...note, text: nextText } : note))
+      prev.map((note) =>
+        note.id === noteId ? { ...note, text: nextText, projectId: nextProjectId ?? undefined } : note
+      )
     );
     setIsSaving(true);
     setError(null);
@@ -65,7 +116,7 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
       const response = await fetch(`${STICKY_NOTES_BASE}/${noteId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: nextText }),
+        body: JSON.stringify({ text: nextText, projectId: nextProjectId }),
       });
 
       if (!response.ok) {
@@ -182,6 +233,23 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
                     )}
                   </p>
                 </div>
+                {projectOptions.length > 0 ? (
+                  <div className="note-project-picker">
+                    <label htmlFor="notes-project-select">Project</label>
+                    <select
+                      id="notes-project-select"
+                      value={projectDraft}
+                      onChange={(event) => setProjectDraft(event.target.value)}
+                    >
+                      <option value="">No project</option>
+                      {projectOptions.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
                 <textarea
                   className="notes-editor-textarea"
                   value={draftText}

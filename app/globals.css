@@ -2159,7 +2159,7 @@ input[type="number"]:focus {
 /* === Notes Page === */
 
 .notes-shell {
-  width: min(900px, 100%);
+  width: min(1200px, 100%);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -2208,13 +2208,20 @@ input[type="number"]:focus {
 
 .notes-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .notes-list {
+    flex-direction: column;
+  }
 }
 
 .notes-editor {
   border-radius: 20px;
   border: 1px solid rgba(243, 199, 132, 0.35);
+  background: rgba(15, 8, 4, 0.85);
   background: rgba(15, 8, 4, 0.9);
   padding: 16px 18px;
   display: flex;
