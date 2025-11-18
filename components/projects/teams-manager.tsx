@@ -7,7 +7,13 @@ type TeamOption = {
   name: string;
 };
 
-export function TeamsManager() {
+type TeamsManagerMode = "full" | "manage";
+
+type TeamsManagerProps = {
+  mode?: TeamsManagerMode;
+};
+
+export function TeamsManager({ mode = "full" }: TeamsManagerProps) {
   const [teams, setTeams] = useState<TeamOption[]>([]);
   const [nameInput, setNameInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -78,6 +84,8 @@ export function TeamsManager() {
     }
   }
 
+  const isFullMode = mode === "full";
+
   return (
     <div className="teams-manager">
       <div className="teams-header">
@@ -93,19 +101,29 @@ export function TeamsManager() {
           ))}
         </ul>
       ) : (
-        <p className="teams-empty">No teams yet.</p>
+        <p className="teams-empty">
+          {isFullMode ? "No teams yet." : "No teams yet. Create your first team from the Teams page."}
+        </p>
       )}
-      <form className="teams-form" onSubmit={handleCreate}>
-        <input
-          type="text"
-          value={nameInput}
-          onChange={(event) => setNameInput(event.target.value)}
-          placeholder="Create a new team"
-        />
-        <button className="btn btn-secondary" type="submit" disabled={isCreating || !nameInput.trim()}>
-          {isCreating ? "Creating…" : "Create team"}
-        </button>
-      </form>
+      {isFullMode ? (
+        <form className="teams-form" onSubmit={handleCreate}>
+          <input
+            type="text"
+            value={nameInput}
+            onChange={(event) => setNameInput(event.target.value)}
+            placeholder="Create a new team"
+          />
+          <button className="btn btn-secondary" type="submit" disabled={isCreating || !nameInput.trim()}>
+            {isCreating ? "Creating…" : "Create team"}
+          </button>
+        </form>
+      ) : (
+        <div>
+          <Link href="/teams" className="btn btn-ghost">
+            Manage teams ↗
+          </Link>
+        </div>
+      )}
       {error ? <p className="form-error">{error}</p> : null}
     </div>
   );

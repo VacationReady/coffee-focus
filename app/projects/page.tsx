@@ -71,7 +71,7 @@ export default async function ProjectsPage() {
             <span>Total logged</span>
             <strong>{formatSecondsToMinutesLabel(totalSeconds)}</strong>
           </div>
-          <TeamsManager />
+          <TeamsManager mode="manage" />
           <AddProjectModal />
         </div>
       </section>
