@@ -32,7 +32,7 @@ export default async function NotesPage() {
       <NotesBoard initialNotes={serialized} />
 
       <div className="notes-note">
-        Notes sync with your cabin wall. Complete things from the timer page to archive them here.
+        Notes sync with your cabin wall. Complete things from the timer page or directly from this notes view to archive them here.
       </div>
     </div>
   );

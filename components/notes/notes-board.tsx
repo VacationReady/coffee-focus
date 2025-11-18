@@ -136,6 +136,54 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
     }
   }
 
+  async function handleComplete() {
+    if (!selectedNote || selectedNote.completed) return;
+
+    const nextText = draftText ?? "";
+    const nextProjectId = projectDraft || null;
+    const noteId = selectedNote.id;
+    const previousNotes = notes;
+
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === noteId
+          ? {
+              ...note,
+              text: nextText,
+              projectId: nextProjectId ?? undefined,
+              completed: true,
+              completedAt: new Date().toISOString(),
+            }
+          : note
+      )
+    );
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${STICKY_NOTES_BASE}/${noteId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: nextText, projectId: nextProjectId, completed: true }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error((data as { message?: string }).message ?? "Unable to complete note");
+      }
+
+      const payload = (await response.json()) as { note: StickyNoteDTO };
+      setNotes((prev) =>
+        prev.map((note) => (note.id === payload.note.id ? payload.note : note))
+      );
+    } catch (err) {
+      setNotes(previousNotes);
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
     <>
       <div className="notes-summary">
@@ -260,6 +308,16 @@ export function NotesBoard({ initialNotes }: NotesBoardProps) {
                 />
                 {error ? <p className="notes-editor-error">{error}</p> : null}
                 <div className="notes-editor-actions">
+                  {!selectedNote.completed ? (
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={handleComplete}
+                      disabled={isSaving}
+                    >
+                      Mark complete
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     className="btn btn-primary"
