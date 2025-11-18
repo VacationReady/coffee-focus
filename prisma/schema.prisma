@@ -28,10 +28,10 @@ enum TeamRole {
 }
 
 model Team {
-  id        String           @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   memberships TeamMembership[]
   projects    Project[]
@@ -51,39 +51,39 @@ model TeamMembership {
 }
 
 model User {
-  id            String          @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String?         @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
-  passwordHash  String?         @db.Text
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  passwordHash  String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  projects      Project[]
-  stickyNotes   StickyNote[]
-  focusSessions FocusSession[]
+  accounts        Account[]
+  sessions        Session[]
+  projects        Project[]
+  stickyNotes     StickyNote[]
+  focusSessions   FocusSession[]
   teamMemberships TeamMembership[]
-  assignedTasks ProjectTask[]
+  assignedTasks   ProjectTask[]
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.Text
   refresh_token_expires_in Int?
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  access_token             String? @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.Text
+  session_state            String?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -105,43 +105,43 @@ model VerificationToken {
 }
 
 model Project {
-  id               String        @id @default(cuid())
+  id               String    @id @default(cuid())
   name             String
   summary          String
-  chips            String[]      @default([])
+  chips            String[]  @default([])
   focusGoalMinutes Int?
-  objective        String?       @db.Text
+  objective        String?   @db.Text
   ownerName        String?
   priority         String?
   startDate        DateTime?
   targetLaunchDate DateTime?
-  successCriteria  String?       @db.Text
+  successCriteria  String?   @db.Text
   budget           String?
-  stakeholders     String[]      @default([])
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  stakeholders     String[]  @default([])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   team   Team?   @relation(fields: [teamId], references: [id])
   teamId String?
 
-  owner   User?    @relation(fields: [userId], references: [id])
-  userId  String?
+  owner  User?   @relation(fields: [userId], references: [id])
+  userId String?
 
-  tasks  ProjectTask[]
-  notes  ProjectNote[]
+  tasks         ProjectTask[]
+  notes         ProjectNote[]
   focusSessions FocusSession[]
   stickyNotes   StickyNote[]
 }
 
 model ProjectTask {
-  id             String            @id @default(cuid())
-  title          String
-  status         ProjectTaskStatus @default(backlog)
+  id              String            @id @default(cuid())
+  title           String
+  status          ProjectTaskStatus @default(backlog)
   estimateMinutes Int?
-  loggedSeconds  Int               @default(0)
-  owner          String?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  loggedSeconds   Int               @default(0)
+  owner           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   assignee   User?   @relation(fields: [assigneeId], references: [id])
   assigneeId String?
@@ -163,35 +163,35 @@ model ProjectNote {
 }
 
 model StickyNote {
-  id          String   @id @default(cuid())
-  text        String   @default("")
-  x           Int      @default(100)
-  y           Int      @default(100)
-  completed   Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id          String    @id @default(cuid())
+  text        String    @default("")
+  x           Int       @default(100)
+  y           Int       @default(100)
+  completed   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
   completedAt DateTime?
 
-  user    User?    @relation(fields: [userId], references: [id])
-  userId  String?
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
 
   project   Project? @relation(fields: [projectId], references: [id])
   projectId String?
 }
 
 model FocusSession {
-  id             String             @id @default(cuid())
-  durationSeconds Int               @default(0)
-  status         FocusSessionStatus @default(completed)
-  note           String?            @db.Text
-  startedAt      DateTime           @default(now())
-  completedAt    DateTime?
+  id              String             @id @default(cuid())
+  durationSeconds Int                @default(0)
+  status          FocusSessionStatus @default(completed)
+  note            String?            @db.Text
+  startedAt       DateTime           @default(now())
+  completedAt     DateTime?
 
-  user    User?    @relation(fields: [userId], references: [id])
-  userId  String?
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
 
-  project   Project?    @relation(fields: [projectId], references: [id])
+  project   Project? @relation(fields: [projectId], references: [id])
   projectId String?
 
-  task      ProjectTask? @relation(fields: [projectTaskId], references: [id])
+  task          ProjectTask? @relation(fields: [projectTaskId], references: [id])
   projectTaskId String?
 }
