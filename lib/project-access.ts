@@ -3,7 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { projectInclude } from "@/lib/project-query";
 
 export async function assertProjectOwnership(projectId: string, userId: string) {
-  const exists = await prisma.project.count({ where: { id: projectId, userId } });
+  const exists = await prisma.project.count({
+    where: {
+      id: projectId,
+      OR: [
+        { userId },
+        { team: { memberships: { some: { userId } } } },
+      ],
+    },
+  });
   if (exists === 0) {
     throw new ValidationError("Invalid project reference");
   }
@@ -11,7 +19,13 @@ export async function assertProjectOwnership(projectId: string, userId: string) 
 
 export async function getProjectForUser(projectId: string, userId: string) {
   const project = await prisma.project.findFirst({
-    where: { id: projectId, userId },
+    where: {
+      id: projectId,
+      OR: [
+        { userId },
+        { team: { memberships: { some: { userId } } } },
+      ],
+    },
     include: projectInclude,
   });
   if (!project) {

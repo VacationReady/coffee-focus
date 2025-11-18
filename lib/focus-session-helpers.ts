@@ -56,7 +56,15 @@ export async function resolveProjectContext(options: {
 
   if (taskId) {
     const task = await prisma.projectTask.findFirst({
-      where: { id: taskId, project: { userId: options.userId } },
+      where: {
+        id: taskId,
+        project: {
+          OR: [
+            { userId: options.userId },
+            { team: { memberships: { some: { userId: options.userId } } } },
+          ],
+        },
+      },
       select: { id: true, projectId: true },
     });
     if (!task) {
@@ -72,7 +80,16 @@ export async function resolveProjectContext(options: {
     throw new ValidationError("Project reference required when no task is provided");
   }
 
-  const project = await prisma.project.findFirst({ where: { id: projectId, userId: options.userId }, select: { id: true } });
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      OR: [
+        { userId: options.userId },
+        { team: { memberships: { some: { userId: options.userId } } } },
+      ],
+    },
+    select: { id: true },
+  });
   if (!project) {
     throw new ValidationError("Invalid project reference");
   }

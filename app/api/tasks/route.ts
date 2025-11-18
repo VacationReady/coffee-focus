@@ -23,6 +23,7 @@ type CreateTaskPayload = {
   status?: string;
   estimateMinutes?: number | null;
   owner?: string | null;
+  assigneeId?: string | null;
 };
 
 type UpdateTaskPayload = {
@@ -31,12 +32,20 @@ type UpdateTaskPayload = {
   estimateMinutes?: number | null;
   loggedSeconds?: number | null;
   owner?: string | null;
+  assigneeId?: string | null;
 };
 
 export const GET = withRouteErrorHandling(async () => {
   const { userId } = await requireUser();
   const tasks = await prisma.projectTask.findMany({
-    where: { project: { userId } },
+    where: {
+      project: {
+        OR: [
+          { userId },
+          { team: { memberships: { some: { userId } } } },
+        ],
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -55,6 +64,14 @@ export const POST = withRouteErrorHandling(async (request: Request) => {
     throw new ValidationError("Task title is required");
   }
 
+  let assigneeId: string | null = null;
+  if (typeof body.assigneeId === "string" && body.assigneeId.trim().length > 0) {
+    if (body.assigneeId !== userId) {
+      throw new ValidationError("You can currently only assign tasks to yourself");
+    }
+    assigneeId = userId;
+  }
+
   const task = await prisma.projectTask.create({
     data: {
       projectId,
@@ -62,6 +79,7 @@ export const POST = withRouteErrorHandling(async (request: Request) => {
       status: normalizeTaskStatus(body.status, "backlog"),
       estimateMinutes: sanitizeEstimateMinutes(body.estimateMinutes),
       owner: sanitizeTaskOwner(body.owner),
+      assigneeId,
     },
   });
 
@@ -103,6 +121,17 @@ export const PATCH = withRouteErrorHandling(async (request: Request) => {
 
   if ("owner" in body) {
     data.owner = sanitizeTaskOwner(body.owner);
+  }
+
+  if ("assigneeId" in body) {
+    if (typeof body.assigneeId === "string" && body.assigneeId.trim().length > 0) {
+      if (body.assigneeId !== userId) {
+        throw new ValidationError("You can currently only assign tasks to yourself");
+      }
+      data.assigneeId = userId;
+    } else {
+      data.assigneeId = null;
+    }
   }
 
   if (Object.keys(data).length === 0) {

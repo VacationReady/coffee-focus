@@ -15,7 +15,12 @@ export default async function HomePage() {
 
   const [projects, stickyNotes] = await Promise.all([
     prisma.project.findMany({
-      where: { userId: session.user.id },
+      where: {
+        OR: [
+          { userId: session.user.id },
+          { team: { memberships: { some: { userId: session.user.id } } } },
+        ],
+      },
       include: projectInclude,
       orderBy: { updatedAt: "desc" },
     }),

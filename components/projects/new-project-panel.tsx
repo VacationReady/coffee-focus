@@ -7,6 +7,11 @@ const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"] as const;
 
 const CHIPS_PRESETS = ["Discovery", "Delivery", "Ops", "QA", "Client"];
 
+type TeamOption = {
+  id: string;
+  name: string;
+};
+
 const formatDateForInput = (value: string) => {
   if (!value) return "";
   return value.split("T")[0] ?? value;
@@ -60,6 +65,10 @@ export function NewProjectPanel({ onSuccess }: NewProjectPanelProps = {}) {
   const [error, setError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [touched, setTouched] = useState<Partial<Record<keyof FormFields, boolean>>>({});
+  const [teams, setTeams] = useState<TeamOption[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+  const [isLoadingTeams, setIsLoadingTeams] = useState(false);
+  const [teamError, setTeamError] = useState<string | null>(null);
 
   const isSubmitDisabled = useMemo(() => {
     if (status === "saving") return true;
@@ -71,6 +80,41 @@ export function NewProjectPanel({ onSuccess }: NewProjectPanelProps = {}) {
     const timer = setTimeout(() => setToastMessage(null), 2600);
     return () => clearTimeout(timer);
   }, [toastMessage]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadTeams() {
+      setIsLoadingTeams(true);
+      try {
+        const response = await fetch("/api/teams");
+        if (!response.ok) {
+          throw new Error("Failed to load teams");
+        }
+        const data = (await response.json()) as { teams?: TeamOption[] };
+        if (!isCancelled) {
+          setTeams(data.teams ?? []);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          setTeams([]);
+          setTeamError(err instanceof Error ? err.message : "Unable to load teams");
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingTeams(false);
+        }
+      }
+    }
+
+    loadTeams().catch(() => {
+      // handled above
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   function handleInputChange<T extends keyof FormFields>(field: T, value: FormFields[T]) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -107,6 +151,7 @@ export function NewProjectPanel({ onSuccess }: NewProjectPanelProps = {}) {
       focusGoalMinutes: form.focusGoalMinutes ? Number(form.focusGoalMinutes) : undefined,
       chips: splitList(form.chips),
       stakeholders: splitList(form.stakeholders),
+      teamId: selectedTeamId || undefined,
     };
 
     try {
@@ -188,6 +233,24 @@ export function NewProjectPanel({ onSuccess }: NewProjectPanelProps = {}) {
           ) : (
             <p className="field-hint">Capture the why in a sentence.</p>
           )}
+        </label>
+
+        <label>
+          Team
+          <select
+            value={selectedTeamId}
+            onChange={(event) => setSelectedTeamId(event.target.value)}
+            disabled={isLoadingTeams}
+          >
+            <option value="">Personal workspace</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+          <p className="field-hint">Choose which team should see this mission.</p>
+          {teamError ? <p className="form-error">{teamError}</p> : null}
         </label>
 
         <label>

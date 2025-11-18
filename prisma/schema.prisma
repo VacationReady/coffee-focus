@@ -20,6 +20,36 @@ enum FocusSessionStatus {
   cancelled
 }
 
+enum TeamRole {
+  owner
+  admin
+  member
+  viewer
+}
+
+model Team {
+  id        String           @id @default(cuid())
+  name      String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  memberships TeamMembership[]
+  projects    Project[]
+}
+
+model TeamMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  teamId    String
+  role      TeamRole
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+}
+
 model User {
   id            String          @id @default(cuid())
   name          String?
@@ -35,6 +65,7 @@ model User {
   projects      Project[]
   stickyNotes   StickyNote[]
   focusSessions FocusSession[]
+  teamMemberships TeamMembership[]
 }
 
 model Account {
@@ -89,6 +120,9 @@ model Project {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
+  team   Team?   @relation(fields: [teamId], references: [id])
+  teamId String?
+
   owner   User?    @relation(fields: [userId], references: [id])
   userId  String?
 
@@ -107,6 +141,9 @@ model ProjectTask {
   owner          String?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
+
+  assignee   User?   @relation(fields: [assigneeId], references: [id])
+  assigneeId String?
 
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String

@@ -28,7 +28,13 @@ const parseDateValue = (value: unknown) => {
 
 async function fetchProjectOrThrow(projectId: string, userId: string) {
   const project = await prisma.project.findFirst({
-    where: { id: projectId, userId },
+    where: {
+      id: projectId,
+      OR: [
+        { userId },
+        { team: { memberships: { some: { userId } } } },
+      ],
+    },
     include: projectInclude,
   });
   if (!project) {

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { AddProjectModal } from "@/components/projects/add-project-modal";
 import { ProjectsBoard } from "@/components/projects/projects-board";
+import { TeamsManager } from "@/components/projects/teams-manager";
 import { getServerAuthSession } from "@/lib/auth";
 import { projectInclude } from "@/lib/project-query";
 import { prisma } from "@/lib/prisma";
@@ -25,7 +26,12 @@ export default async function ProjectsPage() {
   }
 
   const projects = await prisma.project.findMany({
-    where: { userId: session.user.id },
+    where: {
+      OR: [
+        { userId: session.user.id },
+        { team: { memberships: { some: { userId: session.user.id } } } },
+      ],
+    },
     include: projectInclude,
     orderBy: { updatedAt: "desc" },
   });
@@ -65,6 +71,7 @@ export default async function ProjectsPage() {
             <span>Total logged</span>
             <strong>{formatSecondsToMinutesLabel(totalSeconds)}</strong>
           </div>
+          <TeamsManager />
           <AddProjectModal />
         </div>
       </section>

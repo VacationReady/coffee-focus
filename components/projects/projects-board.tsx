@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import type { ProjectDTO } from "@/lib/serializers";
 import { EditProjectPanel } from "./project-edit-panel";
 
@@ -85,6 +87,10 @@ export function ProjectsBoard({ projects }: ProjectsBoardProps) {
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(() => projects[0]?.id ?? null);
 
+  const session = useSession();
+  const router = useRouter();
+  const currentUserId = session.data?.user?.id ?? null;
+
   const editingProject = editingProjectId ? projects.find((project) => project.id === editingProjectId) ?? null : null;
 
   const closeEditModal = useCallback(() => {
@@ -103,6 +109,38 @@ export function ProjectsBoard({ projects }: ProjectsBoardProps) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [closeEditModal, editingProject]);
+
+  const handleAssignToMe = useCallback(
+    async (taskId: string) => {
+      if (!currentUserId) return;
+      const response = await fetch("/api/tasks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: taskId, assigneeId: currentUserId }),
+      });
+      if (!response.ok) {
+        // In a real app we might show a toast; for now rely on backend validation.
+        return;
+      }
+      router.refresh();
+    },
+    [currentUserId, router]
+  );
+
+  const handleClearAssignee = useCallback(
+    async (taskId: string) => {
+      const response = await fetch("/api/tasks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: taskId, assigneeId: null }),
+      });
+      if (!response.ok) {
+        return;
+      }
+      router.refresh();
+    },
+    [router]
+  );
 
   return (
     <div className="projects-content">
@@ -286,6 +324,23 @@ export function ProjectsBoard({ projects }: ProjectsBoardProps) {
                       <div className="project-task-meta">
                         {task.estimateMinutes ? <span>{task.estimateMinutes} min est.</span> : null}
                         <span>{formatSecondsToMinutesLabel(task.loggedSeconds)} logged</span>
+                        <span>{task.assigneeName ? `Assigned: ${task.assigneeName}` : "Unassigned"}</span>
+                        {currentUserId ? (
+                          <button
+                            type="button"
+                            className="btn btn-ghost project-task-assign-btn"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (task.assigneeId === currentUserId) {
+                                void handleClearAssignee(task.id);
+                              } else {
+                                void handleAssignToMe(task.id);
+                              }
+                            }}
+                          >
+                            {task.assigneeId === currentUserId ? "Unassign me" : "Assign to me"}
+                          </button>
+                        ) : null}
                       </div>
                     </div>
                   ))}

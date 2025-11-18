@@ -14,7 +14,12 @@ export const GET = withRouteErrorHandling(async () => {
   const { userId } = await requireUser();
 
   const projects = await prisma.project.findMany({
-    where: { userId },
+    where: {
+      OR: [
+        { userId },
+        { team: { memberships: { some: { userId } } } },
+      ],
+    },
     include: projectInclude,
     orderBy: { updatedAt: "desc" },
   });
@@ -35,6 +40,7 @@ type CreateProjectPayload = {
   successCriteria?: string;
   budget?: string;
   stakeholders?: string[];
+  teamId?: string;
 };
 
 const sanitizeNullableString = (value: unknown) => {
@@ -48,6 +54,22 @@ const parseDateValue = (value: unknown) => {
   const timestamp = Date.parse(value);
   return Number.isNaN(timestamp) ? null : new Date(timestamp);
 };
+
+async function resolveTeamForUser(teamId: unknown, userId: string) {
+  if (typeof teamId !== "string") return null;
+  const trimmed = teamId.trim();
+  if (!trimmed) return null;
+
+  const membership = await prisma.teamMembership.findFirst({
+    where: { teamId: trimmed, userId },
+  });
+
+  if (!membership) {
+    throw new ValidationError("You do not have access to this team");
+  }
+
+  return trimmed;
+}
 
 export const POST = withRouteErrorHandling(async (request: Request) => {
   const { userId } = await requireUser();
@@ -70,6 +92,8 @@ export const POST = withRouteErrorHandling(async (request: Request) => {
       ? Math.max(1, Math.round(body.focusGoalMinutes))
       : null;
 
+  const teamId = await resolveTeamForUser(body.teamId, userId);
+
   const project = await prisma.project.create({
     data: {
       name: body.name.trim(),
@@ -84,6 +108,7 @@ export const POST = withRouteErrorHandling(async (request: Request) => {
       successCriteria: sanitizeNullableString(body.successCriteria),
       budget: sanitizeNullableString(body.budget),
       stakeholders,
+      teamId,
       userId,
     },
     include: projectInclude,

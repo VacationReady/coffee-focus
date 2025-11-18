@@ -8,6 +8,8 @@ type ProjectTaskModel = {
   estimateMinutes: number | null;
   loggedSeconds: number;
   owner: string | null;
+  assigneeId?: string | null;
+  assignee?: { id: string; name: string | null; email: string | null } | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -74,6 +76,8 @@ export type ProjectTaskDTO = {
   estimateMinutes?: number;
   loggedSeconds: number;
   owner?: string;
+  assigneeId?: string;
+  assigneeName?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -141,6 +145,8 @@ export function serializeProjectTask(task: ProjectTaskModel): ProjectTaskDTO {
     estimateMinutes: task.estimateMinutes ?? undefined,
     loggedSeconds: task.loggedSeconds,
     owner: task.owner ?? undefined,
+    assigneeId: task.assigneeId ?? undefined,
+    assigneeName: task.assignee?.name ?? task.assignee?.email ?? undefined,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
   };
