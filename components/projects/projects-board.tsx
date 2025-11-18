@@ -83,9 +83,12 @@ type ProjectsBoardProps = {
   projects: ProjectDTO[];
 };
 
+type ProjectTabKey = "overview" | "tasks" | "activity" | "team" | "docs";
+
 export function ProjectsBoard({ projects }: ProjectsBoardProps) {
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(() => projects[0]?.id ?? null);
+  const [activeTabs, setActiveTabs] = useState<Record<string, ProjectTabKey>>({});
 
   const session = useSession();
   const router = useRouter();
@@ -149,6 +152,7 @@ export function ProjectsBoard({ projects }: ProjectsBoardProps) {
           const projectSeconds = project.tasks.reduce((acc, task) => acc + task.loggedSeconds, 0);
           const progressRatio = project.focusGoalMinutes ? Math.min(projectSeconds / (project.focusGoalMinutes * 60), 1) : null;
           const isExpanded = expandedProjectId === project.id;
+          const activeTab: ProjectTabKey = activeTabs[project.id] ?? "overview";
           const totalNotes = project.notes.length;
           const latestNote = totalNotes > 0 ? project.notes[0] : null;
           const remainingNotes = totalNotes > 0 ? project.notes.slice(1) : [];
@@ -189,6 +193,14 @@ export function ProjectsBoard({ projects }: ProjectsBoardProps) {
               break;
             }
           }
+
+          const collaboratorNames = Array.from(
+            new Set(
+              project.tasks
+                .map((task) => task.assigneeName)
+                .filter((name): name is string => Boolean(name))
+            )
+          );
 
           return (
             <article
@@ -234,33 +246,72 @@ export function ProjectsBoard({ projects }: ProjectsBoardProps) {
               {project.successCriteria ? <p className="project-success">Success criteria: {project.successCriteria}</p> : null}
 
               {isExpanded ? (
-                <div className="project-meta-grid">
-                  <div className="project-meta-item">
-                    <span>Owner</span>
-                    <strong>{project.owner ?? "Unassigned"}</strong>
-                  </div>
-                  <div className="project-meta-item">
-                    <span>Priority</span>
-                    <strong>{project.priority ?? "Triage"}</strong>
-                  </div>
-                  <div className="project-meta-item">
-                    <span>Start</span>
-                    <strong>{formatDateLabel(project.startDate)}</strong>
-                  </div>
-                  <div className="project-meta-item">
-                    <span>Target launch</span>
-                    <strong>{formatDateLabel(project.targetLaunchDate)}</strong>
-                  </div>
-                  <div className="project-meta-item">
-                    <span>Budget</span>
-                    <strong>{project.budget ?? "—"}</strong>
-                  </div>
-                  {project.focusGoalMinutes ? (
-                    <div className="project-meta-item">
-                      <span>Focus goal</span>
-                      <strong>{project.focusGoalMinutes} min</strong>
-                    </div>
-                  ) : null}
+                <div
+                  className="project-tabs"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                >
+                  <button
+                    type="button"
+                    className={`project-tab ${activeTab === "overview" ? "project-tab-active" : ""}`}
+                    onClick={() =>
+                      setActiveTabs((current) => ({
+                        ...current,
+                        [project.id]: "overview",
+                      }))
+                    }
+                  >
+                    Overview
+                  </button>
+                  <button
+                    type="button"
+                    className={`project-tab ${activeTab === "tasks" ? "project-tab-active" : ""}`}
+                    onClick={() =>
+                      setActiveTabs((current) => ({
+                        ...current,
+                        [project.id]: "tasks",
+                      }))
+                    }
+                  >
+                    Tasks
+                  </button>
+                  <button
+                    type="button"
+                    className={`project-tab ${activeTab === "activity" ? "project-tab-active" : ""}`}
+                    onClick={() =>
+                      setActiveTabs((current) => ({
+                        ...current,
+                        [project.id]: "activity",
+                      }))
+                    }
+                  >
+                    Activity
+                  </button>
+                  <button
+                    type="button"
+                    className={`project-tab ${activeTab === "team" ? "project-tab-active" : ""}`}
+                    onClick={() =>
+                      setActiveTabs((current) => ({
+                        ...current,
+                        [project.id]: "team",
+                      }))
+                    }
+                  >
+                    Team
+                  </button>
+                  <button
+                    type="button"
+                    className={`project-tab ${activeTab === "docs" ? "project-tab-active" : ""}`}
+                    onClick={() =>
+                      setActiveTabs((current) => ({
+                        ...current,
+                        [project.id]: "docs",
+                      }))
+                    }
+                  >
+                    Docs
+                  </button>
                 </div>
               ) : null}
 
@@ -286,172 +337,235 @@ export function ProjectsBoard({ projects }: ProjectsBoardProps) {
               ) : null}
 
               {isExpanded ? (
-                <div className="project-health-strip">
-                  <div className="project-health-item">
-                    <span>Last activity</span>
-                    <strong>{lastActivityLabel}</strong>
-                  </div>
-                  <div className="project-health-item">
-                    <span>Recaps (7d)</span>
-                    <strong>{recentRecapCount}</strong>
-                  </div>
-                  <div className="project-health-item">
-                    <span>Open inline notes</span>
-                    <strong>{activeStickyNotes.length}</strong>
-                  </div>
-                </div>
-              ) : null}
-
-              {isExpanded && project.stakeholders.length > 0 ? (
-                <div className="project-stakeholders">
-                  <span>Stakeholders</span>
-                  <div className="project-stakeholders-list">
-                    {project.stakeholders.map((person) => (
-                      <span key={person}>{person}</span>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              {isExpanded ? (
-                <div className="project-task-list">
-                  {project.tasks.map((task) => (
-                    <div key={task.id} className="project-task">
-                      <div className="project-task-main">
-                        <p className="project-task-title">{task.title}</p>
-                        <span className={`project-task-status project-task-status-${task.status}`}>{task.status}</span>
+                <>
+                  {activeTab === "overview" ? (
+                    <div className="project-meta-grid">
+                      <div className="project-meta-item">
+                        <span>Owner</span>
+                        <strong>{project.owner ?? "Unassigned"}</strong>
                       </div>
-                      <div className="project-task-meta">
-                        {task.estimateMinutes ? <span>{task.estimateMinutes} min est.</span> : null}
-                        <span>{formatSecondsToMinutesLabel(task.loggedSeconds)} logged</span>
-                        <span>{task.assigneeName ? `Assigned: ${task.assigneeName}` : "Unassigned"}</span>
-                        {currentUserId ? (
-                          <button
-                            type="button"
-                            className="btn btn-ghost project-task-assign-btn"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              if (task.assigneeId === currentUserId) {
-                                void handleClearAssignee(task.id);
-                              } else {
-                                void handleAssignToMe(task.id);
-                              }
-                            }}
-                          >
-                            {task.assigneeId === currentUserId ? "Unassign me" : "Assign to me"}
-                          </button>
-                        ) : null}
+                      <div className="project-meta-item">
+                        <span>Priority</span>
+                        <strong>{project.priority ?? "Triage"}</strong>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-
-              {isExpanded ? (
-                <div className="project-notes-feed">
-                  <div className="project-notes-header">
-                    <span>Project notes</span>
-                    <div className="project-notes-header-meta">
-                      <span className="project-notes-count">
-                        {totalNotes === 0
-                          ? "No notes yet"
-                          : `${totalNotes} note${totalNotes === 1 ? "" : "s"}`}
-                      </span>
-                      <Link href="/" className="note-project-jump">
-                        Log from timer ↗
-                      </Link>
-                    </div>
-                  </div>
-                  {totalNotes === 0 && stickyPreview.length === 0 ? (
-                    <p className="project-notes-empty">
-                      No notes yet. Finish a focus block and add a quick recap.
-                    </p>
-                  ) : (
-                    <div className="project-notes-body">
-                      {totalNotes > 0 ? (
-                        <div className="project-notes-recaps">
-                          {latestNote ? (
-                            <article className="project-note-card project-note-card-highlight">
-                              <p className="project-note-body">{latestNote.body}</p>
-                              <div className="project-note-meta">
-                                <span>{latestNote.author}</span>
-                                <time>{formatNoteDate(latestNote.createdAt)}</time>
-                              </div>
-                            </article>
-                          ) : null}
-                          {todayNotes.length > 0 ? (
-                            <div className="project-notes-section">
-                              <p className="project-notes-section-title">Today</p>
-                              <div className="project-notes-list">
-                                {todayNotes.map((note) => (
-                                  <div key={note.id} className="project-notes-row">
-                                    <p className="project-notes-row-body">{note.body}</p>
-                                    <div className="project-notes-row-meta">
-                                      <span>{note.author}</span>
-                                      <time>{formatNoteDate(note.createdAt)}</time>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ) : null}
-                          {weekNotes.length > 0 ? (
-                            <div className="project-notes-section">
-                              <p className="project-notes-section-title">This week</p>
-                              <div className="project-notes-list">
-                                {weekNotes.map((note) => (
-                                  <div key={note.id} className="project-notes-row">
-                                    <p className="project-notes-row-body">{note.body}</p>
-                                    <div className="project-notes-row-meta">
-                                      <span>{note.author}</span>
-                                      <time>{formatNoteDate(note.createdAt)}</time>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ) : null}
-                          {earlierNotes.length > 0 ? (
-                            <div className="project-notes-section">
-                              <p className="project-notes-section-title">Earlier</p>
-                              <div className="project-notes-list">
-                                {earlierNotes.map((note) => (
-                                  <div key={note.id} className="project-notes-row">
-                                    <p className="project-notes-row-body">{note.body}</p>
-                                    <div className="project-notes-row-meta">
-                                      <span>{note.author}</span>
-                                      <time>{formatNoteDate(note.createdAt)}</time>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ) : null}
+                      <div className="project-meta-item">
+                        <span>Start</span>
+                        <strong>{formatDateLabel(project.startDate)}</strong>
+                      </div>
+                      <div className="project-meta-item">
+                        <span>Target launch</span>
+                        <strong>{formatDateLabel(project.targetLaunchDate)}</strong>
+                      </div>
+                      <div className="project-meta-item">
+                        <span>Budget</span>
+                        <strong>{project.budget ?? "—"}</strong>
+                      </div>
+                      {project.focusGoalMinutes ? (
+                        <div className="project-meta-item">
+                          <span>Focus goal</span>
+                          <strong>{project.focusGoalMinutes} min</strong>
                         </div>
                       ) : null}
-                      {stickyPreview.length > 0 ? (
-                        <div className="project-inline-notes">
-                          <div className="project-inline-notes-header">
-                            <span>Inline notes</span>
-                            <span className="project-inline-notes-count">
-                              {activeStickyNotes.length} open
+                    </div>
+                  ) : null}
+
+                  {activeTab === "tasks" ? (
+                    <div className="project-task-list">
+                      {project.tasks.map((task) => (
+                        <div key={task.id} className="project-task">
+                          <div className="project-task-main">
+                            <p className="project-task-title">{task.title}</p>
+                            <span className={`project-task-status project-task-status-${task.status}`}>
+                              {task.status}
                             </span>
                           </div>
-                          <div className="project-inline-notes-list">
-                            {stickyPreview.map((note) => (
-                              <div key={note.id} className="project-inline-note">
-                                <span className="project-inline-note-dot" />
-                                <p className="project-inline-note-body">
-                                  {note.text || "(Empty note)"}
-                                </p>
-                              </div>
+                          <div className="project-task-meta">
+                            {task.estimateMinutes ? <span>{task.estimateMinutes} min est.</span> : null}
+                            <span>{formatSecondsToMinutesLabel(task.loggedSeconds)} logged</span>
+                            <span>{task.assigneeName ? `Assigned: ${task.assigneeName}` : "Unassigned"}</span>
+                            {currentUserId ? (
+                              <button
+                                type="button"
+                                className="btn btn-ghost project-task-assign-btn"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  if (task.assigneeId === currentUserId) {
+                                    void handleClearAssignee(task.id);
+                                  } else {
+                                    void handleAssignToMe(task.id);
+                                  }
+                                }}
+                              >
+                                {task.assigneeId === currentUserId ? "Unassign me" : "Assign to me"}
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {activeTab === "activity" ? (
+                    <div className="project-health-strip">
+                      <div className="project-health-item">
+                        <span>Last activity</span>
+                        <strong>{lastActivityLabel}</strong>
+                      </div>
+                      <div className="project-health-item">
+                        <span>Recaps (7d)</span>
+                        <strong>{recentRecapCount}</strong>
+                      </div>
+                      <div className="project-health-item">
+                        <span>Open inline notes</span>
+                        <strong>{activeStickyNotes.length}</strong>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {activeTab === "team" ? (
+                    <div className="project-team-panel">
+                      <div className="project-team-header-row">
+                        <div className="project-team-owner">
+                          <span className="project-team-label">Owner</span>
+                          <strong className="project-team-value">{project.owner ?? "Unassigned"}</strong>
+                        </div>
+                        <div className="project-team-summary">
+                          <span className="project-team-pill">
+                            {collaboratorNames.length === 0
+                              ? "No active collaborators yet"
+                              : `${collaboratorNames.length} active collaborator${collaboratorNames.length === 1 ? "" : "s"}`}
+                          </span>
+                        </div>
+                      </div>
+                      {collaboratorNames.length > 0 ? (
+                        <div className="project-team-collaborators">
+                          {collaboratorNames.map((name) => (
+                            <span key={name} className="project-team-chip">
+                              {name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+                      {project.stakeholders.length > 0 ? (
+                        <div className="project-stakeholders">
+                          <span>Stakeholders</span>
+                          <div className="project-stakeholders-list">
+                            {project.stakeholders.map((person) => (
+                              <span key={person}>{person}</span>
                             ))}
                           </div>
                         </div>
                       ) : null}
                     </div>
-                  )}
-                </div>
+                  ) : null}
+
+                  {activeTab === "docs" ? (
+                    <div className="project-notes-feed">
+                      <div className="project-notes-header">
+                        <span>Project notes</span>
+                        <div className="project-notes-header-meta">
+                          <span className="project-notes-count">
+                            {totalNotes === 0
+                              ? "No notes yet"
+                              : `${totalNotes} note${totalNotes === 1 ? "" : "s"}`}
+                          </span>
+                          <Link href="/" className="note-project-jump">
+                            Log from timer ↗
+                          </Link>
+                        </div>
+                      </div>
+                      {totalNotes === 0 && stickyPreview.length === 0 ? (
+                        <p className="project-notes-empty">
+                          No notes yet. Finish a focus block and add a quick recap.
+                        </p>
+                      ) : (
+                        <div className="project-notes-body">
+                          {totalNotes > 0 ? (
+                            <div className="project-notes-recaps">
+                              {latestNote ? (
+                                <article className="project-note-card project-note-card-highlight">
+                                  <p className="project-note-body">{latestNote.body}</p>
+                                  <div className="project-note-meta">
+                                    <span>{latestNote.author}</span>
+                                    <time>{formatNoteDate(latestNote.createdAt)}</time>
+                                  </div>
+                                </article>
+                              ) : null}
+                              {todayNotes.length > 0 ? (
+                                <div className="project-notes-section">
+                                  <p className="project-notes-section-title">Today</p>
+                                  <div className="project-notes-list">
+                                    {todayNotes.map((note) => (
+                                      <div key={note.id} className="project-notes-row">
+                                        <p className="project-notes-row-body">{note.body}</p>
+                                        <div className="project-notes-row-meta">
+                                          <span>{note.author}</span>
+                                          <time>{formatNoteDate(note.createdAt)}</time>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : null}
+                              {weekNotes.length > 0 ? (
+                                <div className="project-notes-section">
+                                  <p className="project-notes-section-title">This week</p>
+                                  <div className="project-notes-list">
+                                    {weekNotes.map((note) => (
+                                      <div key={note.id} className="project-notes-row">
+                                        <p className="project-notes-row-body">{note.body}</p>
+                                        <div className="project-notes-row-meta">
+                                          <span>{note.author}</span>
+                                          <time>{formatNoteDate(note.createdAt)}</time>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : null}
+                              {earlierNotes.length > 0 ? (
+                                <div className="project-notes-section">
+                                  <p className="project-notes-section-title">Earlier</p>
+                                  <div className="project-notes-list">
+                                    {earlierNotes.map((note) => (
+                                      <div key={note.id} className="project-notes-row">
+                                        <p className="project-notes-row-body">{note.body}</p>
+                                        <div className="project-notes-row-meta">
+                                          <span>{note.author}</span>
+                                          <time>{formatNoteDate(note.createdAt)}</time>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : null}
+                          {stickyPreview.length > 0 ? (
+                            <div className="project-inline-notes">
+                              <div className="project-inline-notes-header">
+                                <span>Inline notes</span>
+                                <span className="project-inline-notes-count">
+                                  {activeStickyNotes.length} open
+                                </span>
+                              </div>
+                              <div className="project-inline-notes-list">
+                                {stickyPreview.map((note) => (
+                                  <div key={note.id} className="project-inline-note">
+                                    <span className="project-inline-note-dot" />
+                                    <p className="project-inline-note-body">
+                                      {note.text || "(Empty note)"}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </article>
           );
