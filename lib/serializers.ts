@@ -38,6 +38,7 @@ type ProjectModel = {
   updatedAt: Date;
   tasks: ProjectTaskModel[];
   notes: ProjectNoteModel[];
+  stickyNotes: StickyNoteModel[];
 };
 
 type StickyNoteModel = {
@@ -103,6 +104,7 @@ export type ProjectDTO = {
   updatedAt: string;
   tasks: ProjectTaskDTO[];
   notes: ProjectNoteDTO[];
+  stickyNotes?: StickyNoteDTO[];
 };
 
 export type StickyNoteDTO = {
@@ -179,6 +181,10 @@ export function serializeProject(project: ProjectModel): ProjectDTO {
       .slice()
       .sort((a: ProjectNoteModel, b: ProjectNoteModel) => b.createdAt.getTime() - a.createdAt.getTime())
       .map(serializeProjectNote),
+    stickyNotes: project.stickyNotes
+      .slice()
+      .sort((a: StickyNoteModel, b: StickyNoteModel) => b.createdAt.getTime() - a.createdAt.getTime())
+      .map(serializeStickyNote),
   };
 }
 

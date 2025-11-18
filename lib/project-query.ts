@@ -5,4 +5,7 @@ export const projectInclude = {
   notes: {
     orderBy: { createdAt: "desc" as const },
   },
+  stickyNotes: {
+    orderBy: { createdAt: "desc" as const },
+  },
 };
