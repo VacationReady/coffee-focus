@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { TeamRole } from '@prisma/client';
+
 import {
   NotFoundError,
   UnauthorizedError,
@@ -112,6 +114,10 @@ export const POST = withRouteErrorHandling(async (request: Request, context: Rou
 
   const role = typeof body.role === "string" && body.role.trim() ? body.role.trim() : "member";
 
+  if (!Object.values(TeamRole).includes(role as TeamRole)) {
+    throw new ValidationError("Invalid role");
+  }
+
   const membership = await prisma.teamMembership.upsert({
     where: {
       userId_teamId: {
@@ -119,11 +125,11 @@ export const POST = withRouteErrorHandling(async (request: Request, context: Rou
         teamId,
       },
     },
-    update: { role },
+    update: { role: role as TeamRole },
     create: {
       userId: targetUser.id,
       teamId,
-      role,
+      role: role as TeamRole,
     },
     include: {
       user: true,
